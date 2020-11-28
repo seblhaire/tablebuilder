@@ -1,6 +1,6 @@
 {
     "name": "seblhaire/tablebuilder",
-    "description": "Laravel library to initialize javascript table builder and build data",
+    "description": "A Laravel library to build tables easily, which interacts with a lightweight js builder and builds data from Eloquent Object-Relational Mapping with database tables, or can be used with static data.",
     "type": "library",
     "authors": [
         {
@@ -13,7 +13,7 @@
     "license": "MIT",
     "require": {
         "php": ">=5.6",
-        "illuminate/http": "^6.0|^7.0|^8.0",
+        "illuminate/http": "^6.0|^7.0|^8.0"
     },
     "autoload": {
         "psr-4": {
