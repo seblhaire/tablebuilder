@@ -23,7 +23,7 @@
     "extra": {
       "laravel": {
           "providers": [
-              "Seblhaire\\TableBuilder\\TableBuilderHelperService"
+              "Seblhaire\\TableBuilder\\TableBuilderHelperServiceProvider"
           ],
           "aliases": {
               "TableBuilderHelper": "Seblhaire\\TableBuilder\\TableBuilderHelper"
