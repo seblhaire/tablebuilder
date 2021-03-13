@@ -600,7 +600,7 @@ jQuery.extend(TableBuilderStatusCell, TableBuilderBaseCell);
 var TableBuilder = {
 	url: null, // url of function
 	cols: null, // table columns definitions
-	options: null, 
+	options: null,
 	divid: null, //id of table <div>
 	tableid: null, // table id
 	mainDiv: null, // table div object
@@ -620,7 +620,8 @@ var TableBuilder = {
 	columnIndex: null, //column index
 	lineIndex: null, //line index
 	aTabsQueries: null, //xhr tab queries to cancel, for search engine
-	
+	colspan: null,
+
 	// constructor
 	/*
 	@param string url url for table builder
@@ -834,6 +835,7 @@ var TableBuilder = {
 					this.tableParams.sortBy = obj.setOrderQuery();
 				}
 			}
+			this.colspan = (this.options.buttons.length > 0) ? this.columns.length + 1 : this.columns.length;
 		} else {
 			throw 'No cols';
 		}
@@ -902,8 +904,7 @@ var TableBuilder = {
 	printFooter: function(str) {
 		this.tableFoot.html('');
 		let newline = jQuery('<tr></tr>').attr('id', this.tableid + '_line_footer');
-		let iColspan = this.columns.length + ((this.options.buttons.length > 0) ? 1 : 0);
-		let newtd = jQuery('<td></td>').attr('colspan', iColspan).addClass(this.options.footerclass).html(str).appendTo(newline);
+		let newtd = jQuery('<td></td>').attr('colspan', this.colspan).addClass(this.options.footerclass).html(str).appendTo(newline);
 		newline.appendTo(this.tableFoot);
 	},
 	// event if column header is clicked
@@ -1020,11 +1021,11 @@ var TableBuilder = {
 						}
 					}
 					self.aTabsQueries.push(xhr);
-					self.tableBody.html('<tr><td colspan="' + self.columns.length + '">' + self.buildAjaxImg() + '</td></tr>');
+					self.tableBody.html('<tr><td colspan="' + self.colspan  + '">' + self.buildAjaxImg() + '</td></tr>');
 				},
 				statusCode: {
 					404: function() {
-						self.tableBody.html('<tr><td colspan="' + self.columns.length + '">' + self.options.ajaxerrormsg + '</td></tr>');
+						self.tableBody.html('<tr><td colspan="' + self.colspan  + '">' + self.options.ajaxerrormsg + '</td></tr>');
 					}
 				},
 				success: function(data, textStatus, jqXHR) {
@@ -1034,6 +1035,7 @@ var TableBuilder = {
 						self.iTotalLines = data.iTotalLines;
 						self.doPagination();
 						self.printDataLine();
+						let width = (self.options.buttons.length > 0) ? self.columns.length + 1 : self.columns.length;
 						if (
 							data.sFooter !== undefined && (typeof data.sFooter == 'string' || data.sFooter instanceof String) &&
 							data.sFooter.length > 0
@@ -1044,14 +1046,14 @@ var TableBuilder = {
 							eval(self.options.aftertableload(this, data));
 						}
 					} else {
-						self.tableBody.html('<tr><td colspan="' + self.columns.length + '">' + self.options.nodatastr + '</td></tr>');
+						self.tableBody.html('<tr><td colspan="' + self.colspan  + '">' + self.options.nodatastr + '</td></tr>');
 					}
 				},
 				fail: function() {
-					self.tableBody.html('<tr><td colspan="' + self.columns.length + '">' + self.options.ajaxerrormsg + '</td></tr>');
+					self.tableBody.html('<tr><td colspan="' + self.colspan + '">' + self.options.ajaxerrormsg + '</td></tr>');
 				},
 				error: function(jqXHR, textStatus, errorThrown) {
-					self.tableBody.html('<tr><td colspan="' + self.columns.length + '">' + self.options.ajaxerrormsg + '</td></tr>');
+					self.tableBody.html('<tr><td colspan="' + self.colspan + '">' + self.options.ajaxerrormsg + '</td></tr>');
 				}
 			});
 		} catch (e) {
