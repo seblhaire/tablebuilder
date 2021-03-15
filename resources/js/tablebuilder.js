@@ -684,6 +684,8 @@ var TableBuilder = {
 		this.mainDiv.append(heads);
 		this.paginationDiv = jQuery('<div></div>').attr('id', this.divid + '_pagination').addClass(this.options.paginationclass);
 		heads.append(this.paginationDiv);
+		let inputCsrf = jQuery('<input/>').attr('type', 'hidden').attr('id', this.tableid + '_csrf').val(this.options.csrf);
+		let newForm = jQuery('<form/>').attr('action', '').append(inputCsrf);
 		if (this.options.searchable) {
 			this.searchinput = jQuery('<input/>').attr('type', 'text').attr('id', this.divid + '_searchinput')
 				.attr('placeholder', this.options.searchLabel).addClass('form-control input-sm');
@@ -693,9 +695,9 @@ var TableBuilder = {
 			let resetbuttondiv = jQuery('<div/>').addClass(this.options.searchresetbuttondivclass).append(resetButton);
 			let searchinputgrpclass = jQuery('<div/>').addClass(this.options.searchinputgrpclass).append(this.searchinput).append(resetbuttondiv);
 			let searchdiv = jQuery('<div></div>').attr('id', this.divid + '_searchdiv').addClass(this.options.searchdivclass).append(searchinputgrpclass);
-			let newForm = jQuery('<form/>').attr('action', '').append(searchdiv);
-			heads.append(newForm);
+			newForm.append(searchdiv);
 		}
+		heads.append(newForm);
 		let newtable = jQuery('<table></table>');
 		newtable.attr('id', this.tableid);
 		newtable.addClass(this.options.tableClass);
@@ -992,6 +994,12 @@ var TableBuilder = {
 		}
 		self.reload();
 	},
+	refreshToken: function (){
+			var self = this;
+	    jQuery.get(self.options.refreshurl, function(data){
+	        jQuery('#' + self.tableid + '_csrf').val(data);
+	    });
+	},
 	// load data
 	loadDataByAjax: function() {
 		try {
@@ -1011,7 +1019,7 @@ var TableBuilder = {
 				dataType: 'json',
 				cache: false,
 				headers: {
-					'X-CSRF-Token': self.options.csrf
+					'X-CSRF-Token': jQuery('#' + self.tableid + '_csrf').val()
 				},
 				beforeSend: function(xhr) {
 					let query = null;
@@ -1022,11 +1030,6 @@ var TableBuilder = {
 					}
 					self.aTabsQueries.push(xhr);
 					self.tableBody.html('<tr><td colspan="' + self.colspan  + '">' + self.buildAjaxImg() + '</td></tr>');
-				},
-				statusCode: {
-					404: function() {
-						self.tableBody.html('<tr><td colspan="' + self.colspan  + '">' + self.options.ajaxerrormsg + '</td></tr>');
-					}
 				},
 				success: function(data, textStatus, jqXHR) {
 					self.aTabsQueries.pop();
@@ -1049,11 +1052,16 @@ var TableBuilder = {
 						self.tableBody.html('<tr><td colspan="' + self.colspan  + '">' + self.options.nodatastr + '</td></tr>');
 					}
 				},
-				fail: function() {
+				fail: function(jqXHR, textStatus, errorThrown) {
 					self.tableBody.html('<tr><td colspan="' + self.colspan + '">' + self.options.ajaxerrormsg + '</td></tr>');
 				},
 				error: function(jqXHR, textStatus, errorThrown) {
-					self.tableBody.html('<tr><td colspan="' + self.colspan + '">' + self.options.ajaxerrormsg + '</td></tr>');
+					if (jqXHR.status == 419){
+						self.refreshToken();
+						self.reload();
+					} else {
+						self.tableBody.html('<tr><td colspan="' + self.colspan + '">' + self.options.ajaxerrormsg + '</td></tr>');
+					}
 				}
 			});
 		} catch (e) {
