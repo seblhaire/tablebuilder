@@ -145,6 +145,9 @@ class TableDefinition
         if (isset($this->aOptions['aftertableload'])) {
             $sStr .= ",\naftertableload : " . $this->aOptions['aftertableload'];
         }
+        if (isset($this->aOptions['csrfrefreshroute'])) {
+            $sStr .= ",\ncsrfrefreshroute : '" . $this->aOptions['csrfrefreshroute'] . "'";
+        }
         $sButtons = "";
         if (isset($this->aOptions['buttons']) && count($this->aOptions['buttons']) > 0) {
 
