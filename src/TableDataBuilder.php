@@ -48,9 +48,9 @@ class TableDataBuilder
     {
         $rules = array_merge([
             'itemsperpage' => 'required|numeric',
-            'sortBy' => 'string',
+            'sortBy' => 'present',
             'start' => 'required|numeric',
-            'searchTerm' => 'string'
+            'searchTerm' => 'present'
         ], $othervalidationrules);
         $validator = Validator::make($request->all(), $rules);
 
