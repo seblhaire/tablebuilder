@@ -22,12 +22,6 @@ class TableBuilderHelperServiceProvider extends ServiceProvider
             __DIR__ . '/../resources/js/tablebuilder.js' => public_path('js/vendor/seblhaire/tablebuilder/tablebuilder.js'),
             __DIR__ . '/../resources/css/tablebuilder.scss' => public_path('css/vendor/seblhaire/tablebuilder/tablebuilder.css')
         ]);
-        $config = $this->app->config;
-        $config->set('database.tablebuilder', 'tablebuilder');
-        $config->set('database.connections.tablebuilder', [
-            'driver' => 'sqlite',
-            'database' => ':memory:'
-        ]);
     }
 
     /**

@@ -83,15 +83,6 @@ For your stylesheet:
 
 Table Builder library is customizable. Default values can be changed, either in configuration file, or by passing options in Facade function (see next section). If you want to modify default configuration file, publish package files and access to `config/tablebuilder.php`.
 
-## Display example page
-
-TableBuilder provides an example template and a controller which allows you to get examples. Controller is under `vendor/seblhaire/tablebuilder/src/TableController.php`. It creates a temporary database in memory and feeds it with data, everytime the table is loaded. View is in `vendor/seblhaire/tablebuilder/resources/views/example.blade.php`. simply add following lines in `routes/web.php` and don't forget to remove them when you put your app in production.
-
-```
-Route::get('/test', '\Seblhaire\TableBuilder\TableController@index');
-Route::post('/test/tabletest', '\Seblhaire\TableBuilder\TableController@loadTable')->name('tabletest');
-```
-
 ## Usage
 
 TableBuilder package comes with a simple Facade.
@@ -168,6 +159,13 @@ where:
   }
   ```
   Default empty.
+  * `'csrfrefreshroute'`: route to refresh csrf in case of error. Add this route in your project:
+  ```
+  Route::get('/refresh-csrf', function(){
+      return csrf_token();
+  })->name('refreshcsrf');
+  ```
+
 
 To summarize, in your controller insert:
 
@@ -176,7 +174,8 @@ $oTable = TableBuilderHelper::initTable('tabtest',  route("tabletest"),  [
     'buttons' => [['id' => 'toto', 'em' => 'fas fa-search', 'action' => "multiselect", 'text' => 'Test multselect']],
     'itemsperpage' => 20,
     'eltsPerPageChngCallback' => 'eltspagechanged',
-    'aftertableload' => 'aftertableload'
+    'aftertableload' => 'aftertableload',
+    'csrfrefreshroute' => route('refreshcsrf')
 ]);
 ...
 return view('tablebuilder::example', array('oTable' => $oTable));
