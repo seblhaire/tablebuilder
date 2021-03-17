@@ -14,7 +14,7 @@ It uses:
 ![TableBuilder example image](tablebuilder.png)
 
 Data are automatically paginated and can be searched and sorted. You can also easily add other
-parameters to select data.
+parameters to select data. Demo site available [here](https://sebastien.lhaire.org/paginator).
 
 ## Installation
 
