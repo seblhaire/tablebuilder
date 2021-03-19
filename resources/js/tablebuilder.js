@@ -1030,7 +1030,7 @@ var TableBuilder = {
 					self.aTabsQueries.push(xhr);
 					self.tableBody.html('<tr><td colspan="' + self.colspan  + '">' + self.buildAjaxImg() + '</td></tr>');
 				}
-			).done(function( data ) {
+			}).done(function( data ) {
 				self.aTabsQueries.pop();
 				if (data.aLines.length > 0) {
 					self.data = data.aLines;
