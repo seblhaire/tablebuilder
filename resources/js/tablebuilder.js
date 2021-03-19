@@ -1051,6 +1051,7 @@ var TableBuilder = {
 					self.tableBody.html('<tr><td colspan="' + self.colspan  + '">' + self.options.nodatastr + '</td></tr>');
 				}
 			}).fail(function(jqXHR, textStatus, errorThrown) {
+				console.log(jqXHR); console.log(textStatus); console.log(errorThrown);
 				if (jqXHR.status == 419){
 					self.refreshToken();
 					self.reload();
