@@ -1002,7 +1002,6 @@ var TableBuilder = {
 	},
 	// load data
 	loadDataByAjax: function() {
-		try {
 			var self = this;
 			let myParams = null;
 			if (self.options.paramsFunction != null) {
@@ -1030,43 +1029,35 @@ var TableBuilder = {
 					}
 					self.aTabsQueries.push(xhr);
 					self.tableBody.html('<tr><td colspan="' + self.colspan  + '">' + self.buildAjaxImg() + '</td></tr>');
-				},
-				success: function(data, textStatus, jqXHR) {
-					self.aTabsQueries.pop();
-					if (data.aLines.length > 0) {
-						self.data = data.aLines;
-						self.iTotalLines = data.iTotalLines;
-						self.doPagination();
-						self.printDataLine();
-						let width = (self.options.buttons.length > 0) ? self.columns.length + 1 : self.columns.length;
-						if (
-							data.sFooter !== undefined && (typeof data.sFooter == 'string' || data.sFooter instanceof String) &&
-							data.sFooter.length > 0
-						) {
-							self.printFooter(data.sFooter);
-						}
-						if (self.options.aftertableload != undefined) {
-							eval(self.options.aftertableload(this, data));
-						}
-					} else {
-						self.tableBody.html('<tr><td colspan="' + self.colspan  + '">' + self.options.nodatastr + '</td></tr>');
+				}
+			).done(function( data ) {
+				self.aTabsQueries.pop();
+				if (data.aLines.length > 0) {
+					self.data = data.aLines;
+					self.iTotalLines = data.iTotalLines;
+					self.doPagination();
+					self.printDataLine();
+					let width = (self.options.buttons.length > 0) ? self.columns.length + 1 : self.columns.length;
+					if (
+						data.sFooter !== undefined && (typeof data.sFooter == 'string' || data.sFooter instanceof String) &&
+						data.sFooter.length > 0
+					) {
+						self.printFooter(data.sFooter);
 					}
-				},
-				fail: function(jqXHR, textStatus, errorThrown) {
+					if (self.options.aftertableload != undefined) {
+						eval(self.options.aftertableload(this, data));
+					}
+				} else {
+					self.tableBody.html('<tr><td colspan="' + self.colspan  + '">' + self.options.nodatastr + '</td></tr>');
+				}
+			}).fail(function(jqXHR, textStatus, errorThrown) {
+				if (jqXHR.status == 419){
+					self.refreshToken();
+					self.reload();
+				} else {
 					self.tableBody.html('<tr><td colspan="' + self.colspan + '">' + self.options.ajaxerrormsg + '</td></tr>');
-				},
-				error: function(jqXHR, textStatus, errorThrown) {
-					if (jqXHR.status == 419){
-						self.refreshToken();
-						self.reload();
-					} else {
-						self.tableBody.html('<tr><td colspan="' + self.colspan + '">' + self.options.ajaxerrormsg + '</td></tr>');
-					}
 				}
 			});
-		} catch (e) {
-			console.log(e);
-		}
 	}
 };
 
