@@ -996,7 +996,7 @@ var TableBuilder = {
 	},
 	refreshToken: function (){
 			var self = this;
-	    jQuery.get(self.options.refreshurl, function(data){
+	    jQuery.get(self.options.csrfrefreshroute, function(data){
 	        jQuery('#' + self.tableid + '_csrf').val(data);
 	    });
 	},
@@ -1051,7 +1051,6 @@ var TableBuilder = {
 					self.tableBody.html('<tr><td colspan="' + self.colspan  + '">' + self.options.nodatastr + '</td></tr>');
 				}
 			}).fail(function(jqXHR, textStatus, errorThrown) {
-				console.log(jqXHR); console.log(textStatus); console.log(errorThrown);
 				if (jqXHR.status == 419){
 					self.refreshToken();
 					self.reload();
