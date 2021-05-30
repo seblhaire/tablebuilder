@@ -45,7 +45,7 @@ var TableBuilderBaseCell = {
 			let newa = jQuery('<a></a>').text('\xa0'); //&nbsp;
 			newa.attr('href', '#');
 			newa.attr('title', this.options.completetitle);
-			newa.bind('click', function(e) { e.preventDefault; });
+			newa.on('click', function(e) { e.preventDefault; });
 			newth.append(newa);
 			newa.html(this.options.title);
 		} else {
@@ -74,10 +74,9 @@ var TableBuilderBaseCell = {
 			this.arrowspan.addClass('arrows');
 			this.arrowspan.append(this.ascImg);
 			this.arrowspan.append(this.descImg);
-			newth.append(this.arrowspan);
-			newth.bind('mouseover', { self: this }, this.onHeaderOver);
-			newth.bind('mouseout', { self: this }, this.onHeaderOut);
-			newth.bind('click', { self: this }, this.onHeaderClick);
+			newth.on('mouseover', { self: this }, this.onHeaderOver);
+			newth.on('mouseout', { self: this }, this.onHeaderOut);
+			newth.on('click', { self: this }, this.onHeaderClick);
 		}
 		return newth;
 	},
@@ -250,7 +249,7 @@ var TableBuilderActionCell = {
 			if (actionList[i].text != undefined) {
 				newa.attr('title', actionList[i].text);
 			}
-			newa.bind('click', { self: this, action: actionList[i], data: content }, this.onActionClick);
+			newa.on('click', { self: this, action: actionList[i], data: content }, this.onActionClick);
 			let newimg = null;
 			if (actionList[i].placeholder != undefined) {
 				newimg = jQuery('<em></em>').attr('class', 'glyphicon').html('&nbsp;');
@@ -288,7 +287,7 @@ var TableBuilderActionCell = {
 			let newa = jQuery('<a></a>').text('\xa0'); //&nbsp;
 			newa.attr('href', '#');
 			newa.attr('title', this.options.completetitle);
-			newa.bind('click', function(e) { e.preventDefault; });
+			newa.on('click', function(e) { e.preventDefault; });
 			newth.append(newa);
 			newa.html(this.options.title);
 		} else {
@@ -452,6 +451,7 @@ var TableBuilderLinkCell = {
 			let newa = jQuery('<a></a>');
 			newa.attr('href', content[this.mapToData]);
 			newa.attr('target', this.options.target);
+			newa.attr("rel", "noopener noreferrer");
 			newa.attr('title', content[this.mapToData]);
 			newa.html(text);
 			this.cell.append(newa);
@@ -483,7 +483,7 @@ var TableBuilderMailCell = {
 		if (content[this.mapToData] != undefined) {
 			let newa = jQuery('<a></a>');
 			if (this.options.copycell == true) {
-				newa.attr('href', '#').attr('title', this.options.copytext).bind('click', this.onclick);
+				newa.attr('href', '#').attr('title', this.options.copytext).on('click', this.onclick);
 			} else {
 				newa.attr('href', 'mailto:' + content[this.mapToData]);
 			}
@@ -689,9 +689,9 @@ var TableBuilder = {
 		if (this.options.searchable) {
 			this.searchinput = jQuery('<input/>').attr('type', 'text').attr('id', this.divid + '_searchinput')
 				.attr('placeholder', this.options.searchLabel).addClass('form-control input-sm');
-			this.searchinput.bind('keyup', { self: this }, this.searchInputChange);
+			this.searchinput.on('keyup', { self: this }, this.searchInputChange);
 			let resetButton = jQuery('<button/>').addClass(this.options.searchresetbuttonclass).attr('type', 'button').attr('id', this.divid + '_searchresetbtn')
-				.attr('title', this.options.searchresetlabel).html('x').bind('click', { self: this }, this.resetinputclick);
+				.attr('title', this.options.searchresetlabel).html('x').on('click', { self: this }, this.resetinputclick);
 			let resetbuttondiv = jQuery('<div/>').addClass(this.options.searchresetbuttondivclass).append(resetButton);
 			let searchinputgrpclass = jQuery('<div/>').addClass(this.options.searchinputgrpclass).append(this.searchinput).append(resetbuttondiv);
 			let searchdiv = jQuery('<div></div>').attr('id', this.divid + '_searchdiv').addClass(this.options.searchdivclass).append(searchinputgrpclass);
@@ -736,7 +736,7 @@ var TableBuilder = {
 				}
 				newsel2.append(newopt2);
 			}
-			newsel2.bind('change', { self: this }, this.changeItemsPerPage);
+			newsel2.on('change', { self: this }, this.changeItemsPerPage);
 			divP.append(newsel2);
 			nbPgs.append(divP);
 			let lbl = jQuery('<span></span>').html(' ' + this.options.eltsParPageLabel);
@@ -777,7 +777,7 @@ var TableBuilder = {
 						}
 					}
 				}
-				newbtn.html(content).bind('click', { table: this, action: this.options.buttons[i].action }, applyFunction);
+				newbtn.html(content).on('click', { table: this, action: this.options.buttons[i].action }, applyFunction);
 				buttondiv.append(newbtn);
 			}
 			this.mainDiv.append(buttondiv);
@@ -854,7 +854,7 @@ var TableBuilder = {
 			newth.attr('width', '20px');
 			let newChk = jQuery('<input/>').attr('id', this.tableid + '_chkbox_collchk');
 			newChk.attr('type', 'checkbox');
-			newChk.bind('click', { self: this }, this.onChkboxHeaderClick);
+			newChk.on('click', { self: this }, this.onChkboxHeaderClick);
 			newth.append(newChk);
 			newline.append(newth);
 		}
@@ -932,7 +932,7 @@ var TableBuilder = {
 				let dblleftbtn = jQuery('<button></button>')
 					.attr('type', "button")
 					.addClass("btn btn-default")
-					.bind('click', { self: this }, function(event) { event.data.self.selectpage(1) })
+					.on('click', { self: this }, function(event) { event.data.self.selectpage(1) })
 					.append(jQuery('<em/>').addClass(this.options.dblleftarrow));
 				maingrp.append(dblleftbtn);
 			}
@@ -940,7 +940,7 @@ var TableBuilder = {
 				let leftbtn = jQuery('<button></button>')
 					.attr('type', "button")
 					.addClass("btn btn-default")
-					.bind('click', { self: this }, function(event) {
+					.on('click', { self: this }, function(event) {
 						event.data.self.selectpage(event.data.self.iCurrentPage - 1)
 					}).append(jQuery('<em/>').addClass(this.options.leftarrow));
 				maingrp.append(leftbtn);
@@ -955,7 +955,7 @@ var TableBuilder = {
 					}
 					this.selpage.append(newopt);
 				}
-				this.selpage.bind('change', { self: this }, function(event) {
+				this.selpage.on('change', { self: this }, function(event) {
 					event.data.self.selectpage(jQuery(this).children('option:selected').val());
 				});
 				selgrp.append(this.selpage);
@@ -965,7 +965,7 @@ var TableBuilder = {
 				let rightbtn = jQuery('<button></button>')
 					.attr('type', "button")
 					.addClass("btn btn-default")
-					.bind('click', { self: this }, function(event) {
+					.on('click', { self: this }, function(event) {
 						event.data.self.selectpage(event.data.self.iCurrentPage + 1)
 					}).append(jQuery('<em/>').addClass(this.options.rightarrow));
 				maingrp.append(rightbtn);
@@ -974,7 +974,7 @@ var TableBuilder = {
 				let dblrightbtn = jQuery('<button></button>')
 					.attr('type', "button")
 					.addClass("btn btn-default")
-					.bind('click', { self: this }, function(event) {
+					.on('click', { self: this }, function(event) {
 						event.data.self.selectpage(event.data.self.iNbPages)
 					}).append(jQuery('<em/>').addClass(this.options.dblrightarrow));
 				maingrp.append(dblrightbtn);
