@@ -8,7 +8,7 @@ It uses:
 
 * a Javascript table builder based on [jQuery](https://jquery.com/) Javascript framework.
 * [Moment.js](https://momentjs.com/) date utils library.
-* [Bootstrap](https://getbootstrap.com/) 4 CSS Framework.
+* [Bootstrap](https://getbootstrap.com/) 4 or 5 CSS Framework.
 * [FontAwesome](https://fontawesome.com/) icons
 
 ![TableBuilder example image](tablebuilder.png)
