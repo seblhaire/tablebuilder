@@ -1,0 +1,91 @@
+.TableBuilderHeads{
+	width:100%;
+	margin-bottom:10px;
+        vertical-align: middle;
+}
+.TableBuilderHeads .TableBuilderSearch{
+    width:50%;
+}
+
+.TableBuilderEltsPage select, .TableBuilderPagination select{
+    display:inline;
+    width:65px;
+}
+.TableBuilderEltPageCont{
+    text-align: right;
+    float: right;
+    width:400px;
+}
+.TableBuilderPagination{
+	float: right;
+	text-align:right;
+	line-height:12px;
+	height: 30px;
+	margin-bottom: 16px;
+}
+.TableBuilderPagination span{
+	margin-left:5px;
+}
+
+.TableBuilderBottom{
+	font-family: Arial;
+	font-size:11px;
+	margin-top:5px;
+}
+
+.TableBuilderBottom .buttondivarrow{
+	margin: 0 12px;
+}
+
+.TableBuilder .TableBuilderFooter{
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf) );
+	background:-moz-linear-gradient( center top, #ededed 5%, #dfdfdf 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dfdfdf');
+	background-color:#ededed;
+	border-bottom: 1px #ededed solid;
+	font-weight:bolder;
+	font-size:12px;
+	text-align:center;
+	line-height:20px;
+}
+.TableBuilder thead th{
+	vertical-align: top;
+	font-size:12px;
+}
+.TableBuilder thead th.sortable{
+		cursor: pointer;
+}
+.TableBuilder thead th span.arrows{
+	display:none;
+}
+.TableBuilder td.centercell{
+	padding-left:0px;
+	text-align:center;
+}
+.TableBuilder td.rightcell{
+	text-align:right;
+	padding-right:5px;
+}
+
+.TableBuilder .TableBuilderActions a{
+	padding:0px 2px;
+        width:20px;
+}
+.TableBuilder td a, .TableBuilder th a{
+	text-decoration:none;
+	color:#000000;
+}
+.TableBuilder td a:hover{
+	text-decoration:underline;
+}
+
+
+.TableBuilder .currency{
+	float:left;
+}
+
+
+.TableBuilderBottom .doublearrow{
+	margin-right:3px;
+	margin-left:10px;
+}
