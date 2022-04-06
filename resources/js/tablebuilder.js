@@ -74,6 +74,7 @@ var TableBuilderBaseCell = {
 			this.arrowspan.addClass('arrows');
 			this.arrowspan.append(this.ascImg);
 			this.arrowspan.append(this.descImg);
+			newth.append(this.arrowspan);
 			newth.on('mouseover', { self: this }, this.onHeaderOver);
 			newth.on('mouseout', { self: this }, this.onHeaderOut);
 			newth.on('click', { self: this }, this.onHeaderClick);
