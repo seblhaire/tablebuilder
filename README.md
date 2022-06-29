@@ -359,10 +359,16 @@ Action column provides a set of action buttons. Action button can be defined glo
 * `completetitle`: longer title that can be display on mouse over table head. Default: `null`.
 * `width`: column width (ex: 100px). Default: `null`.
 * `classes`: css classes attached to data cells. Default: `TableBuilderActions`.
-*  `actions`: array of parameters array. Ex: `[['em' => 'far fa-edit', 'text' => 'Edit user', 'js' =>  "loaduser(#{id})"], ['em' => 'fa fa-trash', 'text' => 'Process user', 'js' =>  "procesuser(#{id}, #{lastname},#{firstname}"]]`. If you need to separate group of fields just insert array `['placeholder' => true]`. Parameters are:
-    * button action can be:
-        * `url` : action route in app.
-        * `js` : javascript action name. You can choose the parameters you need with `#{field}` syntax, where `field` is replaced with one of your data identifyer.
+*  `actions`: array of parameters array. Ex: `[['em' => 'far fa-edit', 'text' => 'Edit user', 'js' =>  "loaduser"], ['em' => 'fa fa-trash', 'text' => 'Process user', 'js' =>  "procesuser"]]`. If you need to separate group of fields just insert array `['placeholder' => true]`. Parameters are:
+    * `js` : javascript action name. Parameter is current line data. Action can be defined as follows in the `<script>` tag on the page where the table is displayed:
+    ```
+    var loaduser = function(data){
+        console.log(data);
+    }
+    var procesuser = function(data){
+        alert(data.name); // name is a field in the data you display in your table
+    }
+    ```
     * `text`: title to be displayed on mouse over.
     * `em`: classes for button icon.
 
