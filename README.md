@@ -1,3 +1,4 @@
+
 # TableBuilder
 
 [By Sébastien L'haire](http://sebastien.lhaire.org)
@@ -397,7 +398,9 @@ public function loadTable(Request $request){
 
 This object has several methods:
 
-* `addLine($aLine)`: adds static data to table. `$aLine` must be an array of key-value pairs.
+`$oTable->addMethodToDisplay('actions', function($user){
+            $actions = [
+                ['em' => 'far fa-edit', 'text' => 'Editer utilisateur', 'js' =>  "loaduser"],* `addLine($aLine)`: adds static data to table. `$aLine` must be an array of key-value pairs.
 * `setQuery($param)`: set object for table data building. `$param` is either an object of Eloquent model or a query builder:
    ```
    $user = new \App\User;
@@ -445,6 +448,18 @@ This object has several methods:
     });
     ```
     This method displays lines of users whose wages are more than $10'000.
+   In the last example, here is how to add actions to data.
+   ```
+   $oTable->addMethodToDisplay('actions', function($user){
+         $actions = [['em' => 'far fa-edit', 'text' => 'Edit user, 'js' =>  "loaduser"]];
+         if ( ... ){
+               $actions[] = [....];
+            }else{
+                $actions[] =[ ... ];
+            }
+            return $actions;
+        });   
+     ```
 * `setFooter($txt):` adds a text at table bottom, to summarize data.
 * `output()`: returns table result.
 * `setTotal($iTotal)`: sets total value.

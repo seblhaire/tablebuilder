@@ -212,7 +212,12 @@ var TableBuilderActionCell = {
 		var data = event.data.data;
 		var js = event.data.action.js;
 		event.preventDefault();
-		js(data);
+		if (js instanceof Function){
+			js(data);
+		}else {
+			js = window[js];
+			js(data);
+		}
 	},
 	// build action buttons
 	buildActions: function(td, content, actionList) {
