@@ -160,12 +160,6 @@ where:
   }
   ```
   Default empty.
-  * `'csrfrefreshroute'`: route to refresh csrf in case of error. Add this route in your project:
-  ```
-  Route::get('/refresh-csrf', function(){
-      return csrf_token();
-  })->name('refreshcsrf');
-  ```
 
 
 To summarize, in your controller insert:
@@ -175,8 +169,7 @@ $oTable = TableBuilderHelper::initTable('tabtest',  route("tabletest"),  [
     'buttons' => [['id' => 'toto', 'em' => 'fas fa-search', 'action' => "multiselect", 'text' => 'Test multselect']],
     'itemsperpage' => 20,
     'eltsPerPageChngCallback' => 'eltspagechanged',
-    'aftertableload' => 'aftertableload',
-    'csrfrefreshroute' => route('refreshcsrf')
+    'aftertableload' => 'aftertableload'
 ]);
 ...
 return view('tablebuilder::example', array('oTable' => $oTable));

@@ -971,12 +971,6 @@ var TableBuilder = {
 		}
 		self.reload();
 	},
-	refreshToken: function (){
-			var self = this;
-	    jQuery.get(self.options.csrfrefreshroute, function(data){
-	        jQuery('#' + self.tableid + '_csrf').val(data);
-	    });
-	},
 	// load data
 	loadDataByAjax: function() {
 			var self = this;
@@ -1029,8 +1023,7 @@ var TableBuilder = {
 				}
 			}).fail(function(jqXHR, textStatus, errorThrown) {
 				if (jqXHR.status == 419){
-					self.refreshToken();
-					self.reload();
+					location.reload();
 				} else {
 					self.tableBody.html('<tr><td colspan="' + self.colspan + '">' + self.options.ajaxerrormsg + '</td></tr>');
 				}
