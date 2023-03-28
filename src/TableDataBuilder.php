@@ -294,7 +294,8 @@ class TableDataBuilder
             $aRes = $this->query->get();
         }
         if ($driver == 'mysql') {
-            $this->iTotal = DB::connection($connection)->select(DB::raw('SELECT FOUND_ROWS()'))[0]->{'FOUND_ROWS()'};
+            $expr = DB::raw('SELECT FOUND_ROWS()');
+            $this->iTotal = DB::connection($connection)->select( $expr->getValue(DB::connection($connection)->getQueryGrammar()))[0]->{'FOUND_ROWS()'};
         } else {
             $this->iTotal = $total;
         }
