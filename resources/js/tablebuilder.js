@@ -45,7 +45,7 @@ var TableBuilderBaseCell = {
 			let newa = jQuery('<a></a>').text('\xa0'); //&nbsp;
 			newa.attr('href', '#');
 			newa.attr('title', this.options.completetitle);
-			newa.on('click', function(e) { e.preventDefault; });
+			newa.on('click', function(e) { e.preventDefault(); });
 			newth.append(newa);
 			newa.html(this.options.title);
 		} else {
