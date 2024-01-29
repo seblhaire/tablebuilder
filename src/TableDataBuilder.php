@@ -188,7 +188,7 @@ class TableDataBuilder
      */
     public function setSearchFunction($fn)
     {
-        $this->searchfunction = \Closure::bind($fn, $this, get_class());
+        $this->searchfunction = \Closure::bind($fn, $this, get_class($this));
     }
 
     /**
