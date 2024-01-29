@@ -1,3 +1,4 @@
+
 # TableBuilder
 
 [By Sébastien L'haire](http://sebastien.lhaire.org)
@@ -42,7 +43,7 @@ $ php artisan vendor:publish
 
 ## Javascript ans stylesheets
 
-On a webpage, every JS library and CSS stylesheets can be linked separately. If you choose this classical way, first dowload and install above mentionned libraries or use Content Delivery Network (CDN) links as in the example page in last section. Then publish package files as explained above and put following tags in your template:
+On a webpage, every JS library and CSS stylesheets can be linked separately. If you choose this classical way, first dowload and install above mentionned libraries. Then publish package files as explained above and put following tags in your template:
 
 ```html
 <script type="text/javascript" src="js/vendor/seblhaire/tablebuilder/tablebuilder.js"></script>
@@ -159,12 +160,6 @@ where:
   }
   ```
   Default empty.
-  * `'csrfrefreshroute'`: route to refresh csrf in case of error. Add this route in your project:
-  ```
-  Route::get('/refresh-csrf', function(){
-      return csrf_token();
-  })->name('refreshcsrf');
-  ```
 
 
 To summarize, in your controller insert:
@@ -174,8 +169,7 @@ $oTable = TableBuilderHelper::initTable('tabtest',  route("tabletest"),  [
     'buttons' => [['id' => 'toto', 'em' => 'fas fa-search', 'action' => "multiselect", 'text' => 'Test multselect']],
     'itemsperpage' => 20,
     'eltsPerPageChngCallback' => 'eltspagechanged',
-    'aftertableload' => 'aftertableload',
-    'csrfrefreshroute' => route('refreshcsrf')
+    'aftertableload' => 'aftertableload'
 ]);
 ...
 return view('tablebuilder::example', array('oTable' => $oTable));
@@ -359,10 +353,16 @@ Action column provides a set of action buttons. Action button can be defined glo
 * `completetitle`: longer title that can be display on mouse over table head. Default: `null`.
 * `width`: column width (ex: 100px). Default: `null`.
 * `classes`: css classes attached to data cells. Default: `TableBuilderActions`.
-*  `actions`: array of parameters array. Ex: `[['em' => 'far fa-edit', 'text' => 'Edit user', 'js' =>  "loaduser(#{id})"], ['em' => 'fa fa-trash', 'text' => 'Process user', 'js' =>  "procesuser(#{id}, #{lastname},#{firstname}"]]`. If you need to separate group of fields just insert array `['placeholder' => true]`. Parameters are:
-    * button action can be:
-        * `url` : action route in app.
-        * `js` : javascript action name. You can choose the parameters you need with `#{field}` syntax, where `field` is replaced with one of your data identifyer.
+*  `actions`: array of parameters array. Ex: `[['em' => 'far fa-edit', 'text' => 'Edit user', 'js' =>  "loaduser"], ['em' => 'fa fa-trash', 'text' => 'Process user', 'js' =>  "procesuser"]]`. If you need to separate group of fields just insert array `['placeholder' => true]`. Parameters are:
+    * `js` : javascript action name. Parameter is current line data. Action can be defined as follows in the `<script>` tag on the page where the table is displayed:
+    ```
+    var loaduser = function(data){
+        console.log(data);
+    }
+    var procesuser = function(data){
+        alert(data.name); // name is a field in the data you display in your table
+    }
+    ```
     * `text`: title to be displayed on mouse over.
     * `em`: classes for button icon.
 
@@ -391,7 +391,9 @@ public function loadTable(Request $request){
 
 This object has several methods:
 
-* `addLine($aLine)`: adds static data to table. `$aLine` must be an array of key-value pairs.
+`$oTable->addMethodToDisplay('actions', function($user){
+            $actions = [
+                ['em' => 'far fa-edit', 'text' => 'Editer utilisateur', 'js' =>  "loaduser"],* `addLine($aLine)`: adds static data to table. `$aLine` must be an array of key-value pairs.
 * `setQuery($param)`: set object for table data building. `$param` is either an object of Eloquent model or a query builder:
    ```
    $user = new \App\User;
@@ -439,6 +441,18 @@ This object has several methods:
     });
     ```
     This method displays lines of users whose wages are more than $10'000.
+   In the last example, here is how to add actions to data.
+   ```
+   $oTable->addMethodToDisplay('actions', function($user){
+         $actions = [['em' => 'far fa-edit', 'text' => 'Edit user, 'js' =>  "loaduser"]];
+         if ( ... ){
+               $actions[] = [....];
+            }else{
+                $actions[] =[ ... ];
+            }
+            return $actions;
+        });   
+     ```
 * `setFooter($txt):` adds a text at table bottom, to summarize data.
 * `output()`: returns table result.
 * `setTotal($iTotal)`: sets total value.
@@ -458,3 +472,7 @@ This object has several methods:
 Laravel loads config files very early in process. Therefore config files cannot contain `__('translation.key')`. In order to solve this issue, we made an helper either to print directly strings or to send translation key to translation helper. Translation keys can be delimited by character \# . Ex: `"#tablebuilder::messages.required#"`. Original translations are stored under `vendor/seblhaire/tablebuilder/resources/lang`. If you publish package files, you can find translations in `resources/lang/vendor/tablebuilder/`.
 
 Feel free to translate keys in your own language and either to send it to the author or to do a merge request on GitHub.
+
+# Questions? Contributions?
+
+Feel free to send feature requests or merge request to the author or simply to ask questions.

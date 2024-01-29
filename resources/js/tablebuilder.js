@@ -74,6 +74,7 @@ var TableBuilderBaseCell = {
 			this.arrowspan.addClass('arrows');
 			this.arrowspan.append(this.ascImg);
 			this.arrowspan.append(this.descImg);
+			newth.append(this.arrowspan);
 			newth.on('mouseover', { self: this }, this.onHeaderOver);
 			newth.on('mouseout', { self: this }, this.onHeaderOut);
 			newth.on('click', { self: this }, this.onHeaderClick);
@@ -209,37 +210,13 @@ var TableBuilderActionCell = {
 	onActionClick: function(event) {
 		var self = event.data.self;
 		var data = event.data.data;
-		var url = event.data.action.url;
 		var js = event.data.action.js;
 		event.preventDefault();
-		var re = /#\{(\w+)\}/g;
-		let replaces = new Array();
-		if (url !== undefined) {
-
-			while (match = re.exec(url)) {
-				let param = '';
-				if (jQuery.type(data[match[1]]) == 'string') {
-					param = encodeURIComponent(data[match[1]].replace(/'/g, "\\'"));
-				} else {
-					param = data[match[1]]
-				}
-				replaces.push(new Array(match[0], param));
-			}
-			jQuery.each(replaces, function(index, elt) { url = url.replace(elt[0], elt[1]); });
-			window.location.href = url;
-		} else if (js !== undefined) {
-			while (match = re.exec(js)) {
-				let param = '';
-				if (jQuery.type(data[match[1]]) == 'string') {
-					param = "'" + data[match[1]].replace(/'/g, "\\'") + "'";
-				} else {
-					param = data[match[1]]
-				}
-				replaces.push(new Array(match[0], param));
-			}
-			jQuery.each(replaces, function(index, elt) { js = js.replace(elt[0], elt[1]); });
-			//console.log(js);
-			eval(js);
+		if (js instanceof Function){
+			js(data);
+		}else {
+			js = window[js];
+			js(data);
 		}
 	},
 	// build action buttons
@@ -343,7 +320,7 @@ var TableBuilderCheckboxCell = {
 	onInputClick: function(event) {
 		var action = event.data.action;
 		if (action != null) {
-			eval(action(event));
+			action(event);
 		}
 	}
 };
@@ -773,7 +750,7 @@ var TableBuilder = {
 					action = event.data.action;
 					for (var i = 0; i < selectors.length; i++) {
 						if (selectors[i].prop('checked')) {
-							eval(action(data[i]));
+							action(data[i]);
 						}
 					}
 				}
@@ -990,15 +967,9 @@ var TableBuilder = {
 		self.resettablepage();
 		self.tableParams.itemsperpage = self.options.itemsperpage;
 		if (self.options.eltsPerPageChngCallback != undefined) {
-			eval(self.options.eltsPerPageChngCallback(self.options.itemsperpage));
+			self.options.eltsPerPageChngCallback(self.options.itemsperpage);
 		}
 		self.reload();
-	},
-	refreshToken: function (){
-			var self = this;
-	    jQuery.get(self.options.csrfrefreshroute, function(data){
-	        jQuery('#' + self.tableid + '_csrf').val(data);
-	    });
 	},
 	// load data
 	loadDataByAjax: function() {
@@ -1045,15 +1016,14 @@ var TableBuilder = {
 						self.printFooter(data.sFooter);
 					}
 					if (self.options.aftertableload != undefined) {
-						eval(self.options.aftertableload(this, data));
+						self.options.aftertableload(this, data);
 					}
 				} else {
 					self.tableBody.html('<tr><td colspan="' + self.colspan  + '">' + self.options.nodatastr + '</td></tr>');
 				}
 			}).fail(function(jqXHR, textStatus, errorThrown) {
 				if (jqXHR.status == 419){
-					self.refreshToken();
-					self.reload();
+					location.reload();
 				} else {
 					self.tableBody.html('<tr><td colspan="' + self.colspan + '">' + self.options.ajaxerrormsg + '</td></tr>');
 				}

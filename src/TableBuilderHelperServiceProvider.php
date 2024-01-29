@@ -13,7 +13,7 @@ class TableBuilderHelperServiceProvider extends ServiceProvider
         $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'tablebuilder');
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'tablebuilder');
         $this->publishes([
-            __DIR__ . '/../config/tablebuilder.php' => config_path('tablebuilder.php'),
+            __DIR__ . '/../config/' => config_path('vendor/seblhaire'),
             __DIR__ . '/../resources/lang' => resource_path('lang/vendor/tablebuilder'),
             __DIR__ . '/../resources/js/tablebuilder.js' => resource_path('js/vendor/seblhaire/tablebuilder/tablebuilder.js'),
             __DIR__ . '/../resources/css/tablebuilder.scss' => resource_path('sass/vendor/seblhaire/tablebuilder/tablebuilder.scss')

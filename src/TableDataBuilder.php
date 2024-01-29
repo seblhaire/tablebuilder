@@ -264,7 +264,7 @@ class TableDataBuilder
         if ($this->withtrashed == true) {
             $this->query->withTrashed();
         }
-        if (! is_null($this->searchfunction) && ! is_null($this->searchTerm) && strlen($this->searchTerm) > 0) {
+        if (! is_null($this->searchfunction)) {
             $this->query->where($this->searchfunction);
         }
         if ($driver == 'mysql') {
@@ -294,7 +294,8 @@ class TableDataBuilder
             $aRes = $this->query->get();
         }
         if ($driver == 'mysql') {
-            $this->iTotal = DB::connection($connection)->select(DB::raw('SELECT FOUND_ROWS()'))[0]->{'FOUND_ROWS()'};
+            $expr = DB::raw('SELECT FOUND_ROWS()');
+            $this->iTotal = DB::connection($connection)->select( $expr->getValue(DB::connection($connection)->getQueryGrammar()))[0]->{'FOUND_ROWS()'};
         } else {
             $this->iTotal = $total;
         }
@@ -321,9 +322,7 @@ class TableDataBuilder
     {
         $data = collect($this->aLines);
         if (! is_null($this->searchfunction) && ! is_null($this->searchTerm) && strlen($this->searchTerm) > 0) {
-            // var_dump($data);
             $data = $data->filter($this->searchfunction);
-            // var_dump($data);
         }
         $this->iTotal = $data->count();
         if (! is_null($this->sortBy) && $this->sortBy != '') {
@@ -337,13 +336,10 @@ class TableDataBuilder
                 }
             }
         }
-        // var_dump($data);
         if ($this->nbLinesPerPage > 0) {
             $data = $data->skip($this->start)->take($this->nbLinesPerPage);
         }
-        // var_dump($data);
         $this->aLines = array_values($data->toArray());
-        // var_dump($this->aLines);
     }
 
     /**

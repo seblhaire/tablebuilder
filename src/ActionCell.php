@@ -52,12 +52,7 @@ class ActionCell extends AbstractTableColumn
                 if (isset($aAction['js'])) {
                     if (strlen($sStr3) > 0)
                         $sStr3 .= ',';
-                    $sStr3 .= "js : '" . $aAction['js'] . "'";
-                }
-                if (isset($aAction['url'])) {
-                    if (strlen($sStr3) > 0)
-                        $sStr3 .= ',';
-                    $sStr3 .= "url : '" . addslashes($aAction['url']) . "'";
+                    $sStr3 .= "js : " . $aAction['js'];
                 }
                 $sStr2 .= '{' . $sStr3 . '}';
             }
