@@ -1,3 +1,4 @@
 2.0.0 change action button callback calls
 ...
 2.2.1 search function call change
+2.2.2, 2.2.3 fixes for prevent default action on click
