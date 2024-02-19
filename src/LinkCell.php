@@ -1,11 +1,10 @@
 <?php
+
 namespace Seblhaire\TableBuilder;
 
-class LinkCell extends AbstractTableColumn
-{
+class LinkCell extends AbstractTableColumn {
 
     protected $name = 'TableBuilderLinkCell';
-
     protected $type = 'link';
 
     /**
@@ -15,8 +14,7 @@ class LinkCell extends AbstractTableColumn
      *            field name that contains column content
      * @param array $aOptions
      */
-    public function __construct($sDataBindTo, $aOptions)
-    {
+    public function __construct($sDataBindTo, $aOptions) {
         $this->dataBindTo = $sDataBindTo;
         $this->aOptions = array_replace(config('tablebuilder.link'), $aOptions);
     }
@@ -26,8 +24,7 @@ class LinkCell extends AbstractTableColumn
      *
      * @return string
      */
-    public function printOptions()
-    {
+    public function printOptions() {
         $sStr = $this->_options();
         if (isset($this->aOptions['shorten'])) {
             if (strlen($sStr) > 0)

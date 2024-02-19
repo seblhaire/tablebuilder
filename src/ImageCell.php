@@ -1,11 +1,10 @@
 <?php
+
 namespace Seblhaire\TableBuilder;
 
-class ImageCell extends AbstractTableColumn
-{
+class ImageCell extends AbstractTableColumn {
 
     protected $name = 'TableBuilderImageCell';
-
     protected $type = 'image';
 
     /**
@@ -15,8 +14,7 @@ class ImageCell extends AbstractTableColumn
      *            field name that contains column content
      * @param array $aOptions
      */
-    public function __construct($sDataBindTo, $aOptions)
-    {
+    public function __construct($sDataBindTo, $aOptions) {
         $this->dataBindTo = $sDataBindTo;
         $this->aOptions = array_replace(config('tablebuilder.image'), $aOptions);
     }
@@ -26,8 +24,7 @@ class ImageCell extends AbstractTableColumn
      *
      * @return string
      */
-    public function printOptions()
-    {
+    public function printOptions() {
         $sStr = $this->_options();
         if (isset($this->aOptions['tag'])) {
             if (strlen($sStr) > 0)

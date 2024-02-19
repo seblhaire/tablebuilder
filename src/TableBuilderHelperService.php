@@ -1,10 +1,10 @@
 <?php
+
 namespace Seblhaire\TableBuilder;
 
 use Illuminate\Http\Request;
 
-class TableBuilderHelperService implements TableBuilderHelperServiceContract
-{
+class TableBuilderHelperService implements TableBuilderHelperServiceContract {
 
     /**
      * inits a table definition
@@ -17,8 +17,7 @@ class TableBuilderHelperService implements TableBuilderHelperServiceContract
      *            table options
      * @return Seblhaire\TableBuilder\TableDefinition definition object
      */
-    public function initTable($element, $url, $options = [])
-    {
+    public function initTable($element, $url, $options = []) {
         return new TableDefinition($element, $url, $options);
     }
 
@@ -33,19 +32,18 @@ class TableBuilderHelperService implements TableBuilderHelperServiceContract
      *            options list
      * @return Seblhaire\TableBuilder\AbstractTableColumn a column object to be added to table
      */
-    public function initColumn($type, $dataBindTo, $options = [])
-    {
-        if (! in_array($type, [
-            'action',
-            'checkbox',
-            'data',
-            'date',
-            'image',
-            'link',
-            'mail',
-            'numeric',
-            'status'
-        ]))
+    public function initColumn($type, $dataBindTo, $options = []) {
+        if (!in_array($type, [
+                    'action',
+                    'checkbox',
+                    'data',
+                    'date',
+                    'image',
+                    'link',
+                    'mail',
+                    'numeric',
+                    'status'
+                ]))
             throw new \Exception('wrong column type ' . $type);
         $classname = "\Seblhaire\TableBuilder\\" . ucfirst($type) . 'Cell';
         return new $classname($dataBindTo, $options);
@@ -60,8 +58,7 @@ class TableBuilderHelperService implements TableBuilderHelperServiceContract
      *            validation rules for additional custom parameters sent by table
      * @return Seblhaire\TableBuilder\TableDataBuilder object that buidds data
      */
-    public function initDataBuilder(Request $request, $othervalidationrules = [])
-    {
+    public function initDataBuilder(Request $request, $othervalidationrules = []) {
         return new TableDataBuilder($request, $othervalidationrules);
     }
 }

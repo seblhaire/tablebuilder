@@ -1,11 +1,10 @@
 <?php
+
 namespace Seblhaire\TableBuilder;
 
-class MailCell extends AbstractTableColumn
-{
+class MailCell extends AbstractTableColumn {
 
     protected $name = 'TableBuilderMailCell';
-
     protected $type = 'mail';
 
     /**
@@ -15,8 +14,7 @@ class MailCell extends AbstractTableColumn
      *            field name that contains column content
      * @param array $aOptions
      */
-    public function __construct($sDataBindTo, $aOptions)
-    {
+    public function __construct($sDataBindTo, $aOptions) {
         $this->dataBindTo = $sDataBindTo;
         $this->aOptions = array_replace(config('tablebuilder.mail'), $aOptions);
     }
@@ -26,8 +24,7 @@ class MailCell extends AbstractTableColumn
      *
      * @return string
      */
-    public function printOptions()
-    {
+    public function printOptions() {
         $sStr = $this->_options();
         if (isset($this->aOptions['copycell'])) {
             if (strlen($sStr) > 0)

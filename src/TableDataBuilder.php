@@ -9,31 +9,19 @@ use Illuminate\Support\Facades\DB;
 /**
  * Class that analyses parameters sent by Javascript table to the controller, and prepares data that must be returned
  */
-class TableDataBuilder
-{
+class TableDataBuilder {
 
     private $nbLinesPerPage = null;
-
     private $sortBy = null;
-
     private $searchTerm = null;
-
     private $start = null;
-
     private $aLines = null;
-
     private $iTotal = null;
-
     private $sFooter = null;
-
     private $query = null;
-
     private $withtrashed = false;
-
     private $searchfunction = null;
-
     private $methodsToDisplay = array();
-
     private $fieldsList = null;
 
     /**
@@ -44,14 +32,13 @@ class TableDataBuilder
      * @param array $othervalidationrules
      *            validation rules for additional custom parameters sent by table
      */
-    public function __construct(Request $request, $othervalidationrules = [])
-    {
+    public function __construct(Request $request, $othervalidationrules = []) {
         $rules = array_merge([
             'itemsperpage' => 'required|numeric',
             'sortBy' => 'present',
             'start' => 'required|numeric',
             'searchTerm' => 'present'
-        ], $othervalidationrules);
+                ], $othervalidationrules);
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
@@ -76,8 +63,7 @@ class TableDataBuilder
      * @param boolean $bval
      *            on/office
      */
-    public function setWithTrashed($bval = true)
-    {
+    public function setWithTrashed($bval = true) {
         $this->withtrashed = $bval;
     }
 
@@ -86,8 +72,7 @@ class TableDataBuilder
      *
      * @return int nb per page
      */
-    public function nblines()
-    {
+    public function nblines() {
         return (int) $this->nbLinesPerPage;
     }
 
@@ -96,8 +81,7 @@ class TableDataBuilder
      *
      * @return int
      */
-    public function start()
-    {
+    public function start() {
         return (int) $this->start;
     }
 
@@ -106,8 +90,7 @@ class TableDataBuilder
      *
      * @return boolean
      */
-    public function reverseOrder()
-    {
+    public function reverseOrder() {
         return $this->reverseOrder == 'true';
     }
 
@@ -116,8 +99,7 @@ class TableDataBuilder
      *
      * @return string
      */
-    public function sortBy()
-    {
+    public function sortBy() {
         return $this->sortBy;
     }
 
@@ -126,8 +108,7 @@ class TableDataBuilder
      *
      * @return string
      */
-    public function searchTerm()
-    {
+    public function searchTerm() {
         return $this->searchTerm;
     }
 
@@ -136,8 +117,7 @@ class TableDataBuilder
      *
      * @return integer
      */
-    public function total()
-    {
+    public function total() {
         return $this->iTotal;
     }
 
@@ -146,8 +126,7 @@ class TableDataBuilder
      *
      * @return string
      */
-    public function footer()
-    {
+    public function footer() {
         return $this->sFooter;
     }
 
@@ -156,8 +135,7 @@ class TableDataBuilder
      *
      * @return boolean
      */
-    public function hasFooter()
-    {
+    public function hasFooter() {
         return strlen($this->sFooter) > 0;
     }
 
@@ -168,8 +146,7 @@ class TableDataBuilder
      *            \Illuminate\Database\Eloquent\Model| or \Illuminate\Database\Eloquent\Builder $obj
      * @throws \Exception
      */
-    public function setQuery($obj)
-    {
+    public function setQuery($obj) {
         if ($obj instanceof \Illuminate\Database\Eloquent\Model) {
             $query = $obj->whereRaw('1');
         } elseif ($obj instanceof \Illuminate\Database\Eloquent\Builder) {
@@ -186,8 +163,7 @@ class TableDataBuilder
      * @param function $fn
      *            search function
      */
-    public function setSearchFunction($fn)
-    {
+    public function setSearchFunction($fn) {
         $this->searchfunction = \Closure::bind($fn, $this, get_class($this));
     }
 
@@ -197,8 +173,7 @@ class TableDataBuilder
      * @param array $aLine
      *            table data
      */
-    public function addLine($aLine)
-    {
+    public function addLine($aLine) {
         if (is_array($aLine)) {
             $this->aLines[] = $aLine;
         } else {
@@ -211,8 +186,7 @@ class TableDataBuilder
      *
      * @param integer $iTotal
      */
-    public function setTotal($iTotal)
-    {
+    public function setTotal($iTotal) {
         $this->iTotal = (int) $iTotal;
     }
 
@@ -221,8 +195,7 @@ class TableDataBuilder
      *
      * @param string $sFooter
      */
-    public function setFooter($sFooter)
-    {
+    public function setFooter($sFooter) {
         if (is_string($sFooter)) {
             $this->sFooter = $sFooter;
         } else {
@@ -236,8 +209,7 @@ class TableDataBuilder
      * @param string $sFieldLists
      *            comma separated list of fields
      */
-    public function setFields($sFieldLists)
-    {
+    public function setFields($sFieldLists) {
         $this->fieldsList = $sFieldLists;
     }
 
@@ -249,37 +221,35 @@ class TableDataBuilder
      * @param function $func
      *            function to build line. function($line) where line is database row object
      */
-    public function addMethodToDisplay($fieldname, $func)
-    {
+    public function addMethodToDisplay($fieldname, $func) {
         $this->methodsToDisplay[$fieldname] = $func;
     }
 
     /**
      * runs database query: search, order, pagination
      */
-    private function buildData()
-    {
+    private function buildData() {
         $connection = $this->query->getConnection()->getName();
         $driver = $this->query->getConnection()->getConfig('driver');
         if ($this->withtrashed == true) {
             $this->query->withTrashed();
         }
-        if (! is_null($this->searchfunction)) {
+        if (!is_null($this->searchfunction)) {
             $this->query->where($this->searchfunction);
         }
         if ($driver == 'mysql') {
-            if (! is_null($this->fieldsList)) {
+            if (!is_null($this->fieldsList)) {
                 $this->query->select(DB::raw('SQL_CALC_FOUND_ROWS ' . $this->fieldsList));
             } else {
                 $this->query->select(DB::raw('SQL_CALC_FOUND_ROWS *'));
             }
         } else {
             $total = $this->query->getQuery()->count();
-            if (! is_null($this->fieldsList)) {
+            if (!is_null($this->fieldsList)) {
                 $this->query->select(DB::raw($this->fieldsList));
             }
         }
-        if (! is_null($this->sortBy) && $this->sortBy != '') {
+        if (!is_null($this->sortBy) && $this->sortBy != '') {
             $aSorts = explode(';', $this->sortBy);
             foreach ($aSorts as $sSort) {
                 $aField = explode(':', $sSort);
@@ -288,14 +258,14 @@ class TableDataBuilder
         }
         if ($this->nbLinesPerPage > 0) {
             $aRes = $this->query->skip($this->start)
-                ->take($this->nbLinesPerPage)
-                ->get();
+                    ->take($this->nbLinesPerPage)
+                    ->get();
         } else {
             $aRes = $this->query->get();
         }
         if ($driver == 'mysql') {
             $expr = DB::raw('SELECT FOUND_ROWS()');
-            $this->iTotal = DB::connection($connection)->select( $expr->getValue(DB::connection($connection)->getQueryGrammar()))[0]->{'FOUND_ROWS()'};
+            $this->iTotal = DB::connection($connection)->select($expr->getValue(DB::connection($connection)->getQueryGrammar()))[0]->{'FOUND_ROWS()'};
         } else {
             $this->iTotal = $total;
         }
@@ -318,14 +288,13 @@ class TableDataBuilder
      *
      * @return [type] [description]
      */
-    private function buildStaticData()
-    {
+    private function buildStaticData() {
         $data = collect($this->aLines);
-        if (! is_null($this->searchfunction) && ! is_null($this->searchTerm) && strlen($this->searchTerm) > 0) {
+        if (!is_null($this->searchfunction) && !is_null($this->searchTerm) && strlen($this->searchTerm) > 0) {
             $data = $data->filter($this->searchfunction);
         }
         $this->iTotal = $data->count();
-        if (! is_null($this->sortBy) && $this->sortBy != '') {
+        if (!is_null($this->sortBy) && $this->sortBy != '') {
             $aSorts = explode(';', $this->sortBy);
             foreach ($aSorts as $sSort) {
                 $aField = explode(':', $sSort);
@@ -347,8 +316,7 @@ class TableDataBuilder
      *
      * @return json data
      */
-    public function output()
-    {
+    public function output() {
         if (is_null($this->aLines)) {
             $this->buildData();
         } else {

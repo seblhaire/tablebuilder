@@ -1,11 +1,10 @@
 <?php
+
 namespace Seblhaire\TableBuilder;
 
-class StatusCell extends AbstractTableColumn
-{
+class StatusCell extends AbstractTableColumn {
 
     protected $name = 'TableBuilderStatusCell';
-
     protected $type = 'status';
 
     /**
@@ -15,8 +14,7 @@ class StatusCell extends AbstractTableColumn
      *            field name that contains column content
      * @param array $aOptions
      */
-    public function __construct($sDataBindTo, $aOptions)
-    {
+    public function __construct($sDataBindTo, $aOptions) {
         $this->dataBindTo = $sDataBindTo;
         $this->aOptions = array_replace(config('tablebuilder.status'), $aOptions);
     }
@@ -26,8 +24,7 @@ class StatusCell extends AbstractTableColumn
      *
      * @return string
      */
-    public function printOptions()
-    {
+    public function printOptions() {
         $sStr = $this->_options();
         if (isset($this->aOptions['aIcons']) && count($this->aOptions['aIcons']) > 0) {
             $sStr .= ',aIcons : {';

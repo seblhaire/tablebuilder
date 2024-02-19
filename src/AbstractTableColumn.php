@@ -1,4 +1,5 @@
 <?php
+
 namespace Seblhaire\TableBuilder;
 
 /**
@@ -6,17 +7,12 @@ namespace Seblhaire\TableBuilder;
  *
  * @author seb
  */
-abstract class AbstractTableColumn
-{
+abstract class AbstractTableColumn {
 
     protected $name = null;
-
     protected $type = null;
-
     protected $dataBindTo = null;
-
     protected $aOptions = null;
-
     protected $aCheckOptions = array();
 
     /**
@@ -24,8 +20,7 @@ abstract class AbstractTableColumn
      *
      * @return string
      */
-    public function name()
-    {
+    public function name() {
         return $this->name;
     }
 
@@ -34,8 +29,7 @@ abstract class AbstractTableColumn
      *
      * @return string
      */
-    public function type()
-    {
+    public function type() {
         return $this->type;
     }
 
@@ -44,8 +38,7 @@ abstract class AbstractTableColumn
      *
      * @return string
      */
-    public function dataBindTo()
-    {
+    public function dataBindTo() {
         if (is_null($this->dataBindTo)) {
             return 'null';
         } else {
@@ -58,8 +51,7 @@ abstract class AbstractTableColumn
      *
      * @return string
      */
-    protected function _options()
-    {
+    protected function _options() {
         $sStr = "";
         if (isset($this->aOptions['title'])) {
             $sStr .= "title : '" . $this->aOptions['title'] . "'";
@@ -116,8 +108,7 @@ abstract class AbstractTableColumn
      *            translation key surronded by # sign or simple string
      * @return string translated text or simple string
      */
-    protected function translateOrPrint($key)
-    {
+    protected function translateOrPrint($key) {
         if (preg_match('/^\#(.+)\#$/', $key, $matches)) {
             return addslashes(__($matches[1]));
         }

@@ -1,10 +1,10 @@
 <?php
+
 namespace Seblhaire\TableBuilder;
 
 use Illuminate\Http\Request;
 
-interface TableBuilderHelperServiceContract
-{
+interface TableBuilderHelperServiceContract {
 
     public function initTable($element, $url, $options);
 

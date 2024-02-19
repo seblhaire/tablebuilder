@@ -1,15 +1,14 @@
 <?php
+
 namespace Seblhaire\TableBuilder;
 
 use Illuminate\Support\ServiceProvider;
 
-class TableBuilderHelperServiceProvider extends ServiceProvider
-{
+class TableBuilderHelperServiceProvider extends ServiceProvider {
 
     protected $defer = true;
 
-    public function boot()
-    {
+    public function boot() {
         $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'tablebuilder');
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'tablebuilder');
         $this->publishes([
@@ -29,16 +28,14 @@ class TableBuilderHelperServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function register()
-    {
+    public function register() {
         $this->mergeConfigFrom(__DIR__ . '/../config/tablebuilder.php', 'tablebuilder');
         $this->app->singleton('TableBuilderHelperService', function ($app) {
             return new TableBuilderHelperService();
         });
     }
 
-    public function provides()
-    {
+    public function provides() {
         return [
             TableBuilderHelperServiceContract::class
         ];

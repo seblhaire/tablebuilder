@@ -1,11 +1,10 @@
 <?php
+
 namespace Seblhaire\TableBuilder;
 
-class DataCell extends AbstractTableColumn
-{
+class DataCell extends AbstractTableColumn {
 
     protected $name = 'TableBuilderDataCell';
-
     protected $type = 'data';
 
     /**
@@ -15,8 +14,7 @@ class DataCell extends AbstractTableColumn
      *            field name that contains column content
      * @param array $aOptions
      */
-    public function __construct($sDataBindTo, $aOptions)
-    {
+    public function __construct($sDataBindTo, $aOptions) {
         $this->dataBindTo = $sDataBindTo;
         $this->aOptions = array_replace(config('tablebuilder.data'), $aOptions);
     }
@@ -26,8 +24,7 @@ class DataCell extends AbstractTableColumn
      *
      * @return string
      */
-    public function printOptions()
-    {
+    public function printOptions() {
         return "{" . $this->_options() . "}";
     }
 }

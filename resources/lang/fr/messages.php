@@ -1,4 +1,5 @@
 <?php
+
 return [
     'ajaxerrormsg' => 'erreur de chargement du tableau',
     'nodatastr' => 'pas de données',

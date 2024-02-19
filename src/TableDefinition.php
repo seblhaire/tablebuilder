@@ -5,15 +5,11 @@ namespace Seblhaire\TableBuilder;
 /**
  * class that sets table contents and prints Javascript code needed by table object
  */
-class TableDefinition
-{
+class TableDefinition {
 
     private $sTableElement = null;
-
     private $url = null;
-
     private $aOptions = array();
-
     private $aColumns = null;
 
     /**
@@ -26,8 +22,7 @@ class TableDefinition
      * @param array $options
      *            table options
      */
-    public function __construct($tableElement, $url, $options = [])
-    {
+    public function __construct($tableElement, $url, $options = []) {
         $this->sTableElement = $tableElement;
         $this->url = $url;
         $this->aOptions = array_merge(array_replace(config('tablebuilder.table'), $options), [
@@ -41,8 +36,7 @@ class TableDefinition
      *
      * @return string vaiiable name
      */
-    public function tablevar()
-    {
+    public function tablevar() {
         return $this->sTableElement . "_table";
     }
 
@@ -52,8 +46,7 @@ class TableDefinition
      * @param AbstractTableColumn $obj
      *            table column
      */
-    public function addColumn($obj)
-    {
+    public function addColumn($obj) {
         if (is_a($obj, '\Seblhaire\TableBuilder\AbstractTableColumn')) {
             $this->aColumns[] = $obj;
         } else {
@@ -66,8 +59,7 @@ class TableDefinition
      *
      * @return string js instruction
      */
-    public function outputReload()
-    {
+    public function outputReload() {
         return "jQuery('#" . $this->sTableElement . "').data('mytable').reload();";
     }
 
@@ -76,8 +68,7 @@ class TableDefinition
      *
      * @return string html + js code
      */
-    public function output()
-    {
+    public function output() {
         if (count($this->aColumns) == 0) {
             throw new \Exception('empty cols');
         }
@@ -199,8 +190,7 @@ class TableDefinition
      *            normal string or translation key surrounded by #
      * @return string text to display
      */
-    private function translateOrPrint($key)
-    {
+    private function translateOrPrint($key) {
         if (preg_match('/^\#(.+)\#$/', $key, $matches)) {
             return addslashes(__($matches[1]));
         }

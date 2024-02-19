@@ -1,4 +1,5 @@
 <?php
+
 return [
     'ajaxerrormsg' => 'error loading table',
     'nodatastr' => 'no data',

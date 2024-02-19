@@ -1,11 +1,10 @@
 <?php
+
 namespace Seblhaire\TableBuilder;
 
-class DateCell extends AbstractTableColumn
-{
+class DateCell extends AbstractTableColumn {
 
     protected $name = 'TableBuilderDateCell';
-
     protected $type = 'date';
 
     /**
@@ -15,8 +14,7 @@ class DateCell extends AbstractTableColumn
      *            field name that contains column content
      * @param array $aOptions
      */
-    public function __construct($sDataBindTo, $aOptions)
-    {
+    public function __construct($sDataBindTo, $aOptions) {
         $this->dataBindTo = $sDataBindTo;
         $this->aOptions = array_replace(config('tablebuilder.date'), $aOptions);
     }
@@ -26,8 +24,7 @@ class DateCell extends AbstractTableColumn
      *
      * @return string
      */
-    public function printOptions()
-    {
+    public function printOptions() {
         $sStr = $this->_options();
         if (isset($this->aOptions['format'])) {
             if (strlen($sStr) > 0)
