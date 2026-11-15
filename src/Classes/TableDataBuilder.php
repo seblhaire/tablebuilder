@@ -41,8 +41,11 @@ class TableDataBuilder {
         $this->start = (int)$validated[TableParams::Start->value];
         $this->iTotal = 0;
         $this->sFooter = '';
-        $this->additionalParameters = array_diff($request->validated(), TableParams::values());
-        dd($this->additionalParameters);
+        foreach($request->validated() as $key => $val){
+            if (!in_array($key, TableParams::values())){
+                $this->additionalParameters[$key] = $val;
+            }
+        }
     }
 
     /**
