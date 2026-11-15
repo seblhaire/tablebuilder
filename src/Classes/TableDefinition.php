@@ -3,6 +3,7 @@
 namespace Seblhaire\TableBuilder\Classes;
 
 use Seblhaire\TableBuilder\Classes\Columns\AbstractTableColumn;
+use Seblhaire\TableBuilder\Enums\TableParams;
 
 use Illuminate\Http\Request;
 /**
