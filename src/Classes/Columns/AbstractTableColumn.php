@@ -1,6 +1,6 @@
 <?php
 
-namespace Seblhaire\TableBuilder\Classes\Columns\Columns;
+namespace Seblhaire\TableBuilder\Classes\Columns;
 
 /**
  * Generic table column object that contains common methods
