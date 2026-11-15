@@ -1,11 +1,13 @@
 <?php
 
-namespace Seblhaire\TableBuilder;
+namespace Seblhaire\TableBuilder\Classes\Columns;
+
+use Seblhaire\TableBuilder\Classes\Columns\AbstractTableColumn;
 
 class CheckboxCell extends AbstractTableColumn {
 
-    protected $name = 'TableBuilderCheckboxCell';
-    protected $type = 'checkbox';
+    protected string $name = 'TableBuilderCheckboxCell';
+    protected string $type = 'checkbox';
 
     /**
      * constructor
@@ -14,7 +16,7 @@ class CheckboxCell extends AbstractTableColumn {
      *            field name that contains column content
      * @param array $aOptions
      */
-    public function __construct($sDataBindTo, $aOptions) {
+    public function __construct(string $sDataBindTo, array $aOptions) {
         $this->dataBindTo = $sDataBindTo;
         $this->aOptions = array_replace(config('tablebuilder.checkbox'), $aOptions);
     }

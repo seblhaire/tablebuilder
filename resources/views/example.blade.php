@@ -17,13 +17,13 @@
       </style>
       <br/><br/>
       <div class="container">
-        {!! $oTable->output() !!}
+        {!! $oTable->printDiv() !!}
         <br/><br/><br/><br/>
         <h4>Table inited with static data</h4>
-        {!! $oTable2->output() !!}
+        {!! $oTable2->printDiv() !!}
         <br/><br/><br/><br/>
         <h4>Table inited with static data, no pagination, no search</h4>
-        {!! $oTable3->output() !!}
+        {!! $oTable3->printDiv() !!}
         <script>
             var multiselect = function(data){
                 console.log(data);
@@ -44,6 +44,11 @@
               console.log(tableobject);
               console.log(data);
             }
+          $( document ).ready(function(){
+            {!! $oTable->printJsInit() !!}
+            {!! $oTable2->printJsInit() !!}
+            {!! $oTable3->printJsInit() !!}
+          });
         </script>
 
       </div>

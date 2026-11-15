@@ -1,6 +1,12 @@
+import $ from 'jquery';
+import * as luxon from "luxon";
 /**
  Extendable base class for table cells
  */
+const NONE = 2;
+const ASC = 0;
+const DESC = 1;
+
 var TableBuilderBaseCell = {
     type: '', //column  type
     table: null, //link to table
@@ -12,7 +18,7 @@ var TableBuilderBaseCell = {
     arrowspan: null, // arrows span in column headers
     ascImg: null, // em tag for ascending order
     descImg: null, // em tag for descending order
-    sortStatus: 0, //-1 / +1
+    sortStatus: NONE, //ASC  / DESC
     //sub_constructor common to all cell types
     /*
      @param  TableBuilder table
@@ -35,14 +41,13 @@ var TableBuilderBaseCell = {
     },
     // build header cell
     buildhead: function () {
-        let newth = jQuery('<th></th>');
+        let newth = $('<th></th>');
         newth.attr('id', this.table.tableid + '_head_' + this.cellIndex).attr('scope', 'col');
         if (this.options.width != undefined) {
             newth.attr('width', this.options.width);
         }
-
         if (this.options.completetitle != undefined) {
-            let newa = jQuery('<a></a>').text('\xa0'); //&nbsp;
+            let newa = $('<a></a>').text('\xa0'); //&nbsp;
             newa.attr('href', '#');
             newa.attr('title', this.options.completetitle);
             newa.on('click', function (e) {
@@ -51,6 +56,7 @@ var TableBuilderBaseCell = {
             newth.append(newa);
             newa.html(this.options.title);
         } else {
+            let title = '';
             if (this.options.sortable == true) {
                 title = this.options.title + "&nbsp;";
             } else {
@@ -60,19 +66,19 @@ var TableBuilderBaseCell = {
         }
         if (this.options.sortable == true) {
             newth.addClass('sortable');
-            this.ascImg = jQuery('<em/>');
+            this.ascImg = $('<em/>');
             this.ascImg.attr('id', this.table.tableid + '_head_' + this.cellIndex + '_asc');
             this.ascImg.addClass(this.table.options.uparrow);
-            if (this.sortStatus != 1) {
+            if (this.sortStatus != ASC) {
                 this.ascImg.attr('style', 'display:none');
             }
-            this.descImg = jQuery('<em/>');
+            this.descImg = $('<em/>');
             this.descImg.attr('id', this.table.tableid + '_head_' + this.cellIndex + '_desc');
             this.descImg.addClass(this.table.options.downarrow);
-            if (this.sortStatus != -1) {
+            if (this.sortStatus != DESC) {
                 this.descImg.attr('style', 'display:none');
             }
-            this.arrowspan = jQuery('<span></span>');
+            this.arrowspan = $('<span></span>');
             this.arrowspan.addClass('arrows');
             this.arrowspan.append(this.ascImg);
             this.arrowspan.append(this.descImg);
@@ -85,13 +91,20 @@ var TableBuilderBaseCell = {
     },
     // display arrows function
     displayarrows: function () {
-        this.arrowspan.show();
-        if (this.sortStatus >= 0) {
-            this.ascImg.show();
-            this.descImg.hide();
-        } else {
-            this.ascImg.hide();
-            this.descImg.show();
+        if (!this.table.modecard && this.arrowspan != null){
+            this.arrowspan.show();
+            if (this.sortStatus != DESC) {
+                this.ascImg.show();
+                this.descImg.hide();
+            } else {
+                this.ascImg.hide();
+                this.descImg.show();
+            }
+        }
+    },
+    hidearrows: function () {
+        if (!this.table.modecard && this.arrowspan != null){
+            this.arrowspan.hide();
         }
     },
     // on mouse over
@@ -102,69 +115,84 @@ var TableBuilderBaseCell = {
     // on mouse out
     onHeaderOut: function (event) {
         var self = event.data.self;
-        if (self.sortStatus == 0) {
-            self.arrowspan.hide();
+        if (self.sortStatus == NONE) {
+            self.hidearrows();
         }
     },
     // reset sort status
-    resetOrder: function (first) {
-        if (first == undefined)
-            first = false;
+    resetOrder: function () {
         if (this.options.sortable == true) {
-            if (first && this.options.defaultOrder) {
-                this.arrowspan.show();
-            } else {
-                this.sortStatus = 0;
-                this.arrowspan.hide();
-            }
+            this.sortStatus = NONE;
+            this.hidearrows();
         }
     },
     // return order parameter to table
     setOrderQuery: function () {
-        if (this.sortStatus == 1) {
-            if (this.options.customAsc != undefined) {
-                return this.options.customAsc;
-            } else {
-                return this.mapToData + ':asc';
-            }
-        } else if (this.sortStatus == -1) {
-            if (this.options.customDesc != undefined) {
-                return this.options.customDesc;
-            } else {
-                return this.mapToData + ':desc';
-            }
-        }
+        return this.table.getColumnOrder(this.mapToData, this.sortStatus);
     },
     // set column sort statsu
     setOrderOptions: function () {
         if (this.options.defaultOrder == 'asc') {
-            this.sortStatus = 1;
+            this.sortStatus = ASC;
         } else if (this.options.defaultOrder == 'desc') {
-            this.sortStatus = -1;
+            this.sortStatus = DESC;
         } else {
-            this.sortStatus = 0;
+            this.sortStatus = NONE;
         }
     },
     // action on column header click
     onHeaderClick: function (event) {
         var self = event.data.self;
         event.preventDefault();
-        oldstatus = self.sortStatus;
-        self.table.resetOrder();
+        var oldstatus = self.sortStatus;
+        self.table.resetOrder(false);
         self.table.resettablepage();
-        if (oldstatus < 1) {
-            self.sortStatus = 1;
+        if (oldstatus !=  ASC) {
+            self.sortStatus = ASC;
         } else {
-            self.sortStatus = -1;
+            self.sortStatus = DESC;
         }
         self.table.tableParams.sortBy = self.setOrderQuery();
         self.displayarrows();
+        self.table.setUrl();
         self.table.reload();
+    },
+    buildContainer: function(lineIndex) {
+        if (this.table.modecard){
+            this._buildCardContent(lineIndex);
+        } else {
+            this._buildCell(lineIndex);
+        }
     },
     // common cell building functions
     _buildCell: function (lineIndex) {
-        this.cell = jQuery('<td></td>');
+        this.cell = $('<td></td>');
         this.cell.attr('id', this.table.tableid + '_dataline_' + lineIndex + '_' + this.cellIndex);
+        if (this.options.classes != undefined) {
+            this.cell.addClass(this.options.classes);
+        }
+    },
+    _buildCardContent: function (lineIndex) {
+        this.cell = $('<div></div>');
+        this.cell.attr('id', this.table.tableid + '_dataline_' + lineIndex + '_' + this.cellIndex);
+        if (this.options.classes != undefined) {
+            this.cell.addClass(this.options.cardcontentclass);
+        }
+        var title = '';
+        if (this.options.completetitle != undefined) {
+            title = this.options.completetitle + '&nbsp;:&nbsp;';
+        } else {
+            if (this.options.title != undefined && this.options.title != '') {
+                title = this.options.title + '&nbsp;:&nbsp;';
+            }
+        }
+        this.cell.append(title);
+    },
+    builddata: function (lineobj, lineIndex, content) {
+        this.line = lineobj;
+        this.buildContainer(lineIndex);
+        this.cell.append(this.printData(content, lineIndex));
+        return this.cell;
     }
 };
 
@@ -183,19 +211,11 @@ var TableBuilderDataCell = {
         this._init(table, mapToData, options);
     },
     // build cell
-    builddata: function (lineobj, lineIndex, content) {
-        this.line = lineobj;
-        this._buildCell(lineIndex);
-        //console.log(this.cell);
-        if (this.options.classes != undefined) {
-            this.cell.addClass(this.options.classes);
-        }
-        this.cell.html(content[this.mapToData]);
-        //console.log(this.cell);
-        return this.cell;
+    printData: function(content, lineIndex){
+        return content[this.mapToData];
     }
 };
-jQuery.extend(TableBuilderDataCell, TableBuilderBaseCell);
+$.extend(TableBuilderDataCell, TableBuilderBaseCell);
 
 // Action(s) cell
 var TableBuilderActionCell = {
@@ -223,48 +243,49 @@ var TableBuilderActionCell = {
         }
     },
     // build action buttons
-    buildActions: function (td, content, actionList) {
+    printData: function (content, lineIndex) {
+        let newImg = $('<em></em>').addClass(this.options.icoclass).html('&nbsp;');
+        let btn = $('<button></button>').addClass('dropdown').attr('data-bs-toggle',"dropdown");
+        if (this.options.actiontext.length > 0){
+            btn.attr('title', this.options.actiontext);
+        } 
+        btn.append(newImg);
+        let ul = $('<ul></ul>').addClass('dropdown-menu');
+        let actionList = null;
+        if (content[this.mapToData] instanceof Array) {
+            actionList = content[this.mapToData];
+        } else if (this.options.actions instanceof Array) {
+            actionList = this.options.actions; 
+        }
         for (var i = 0; i < actionList.length; i++) {
-            let newa = jQuery('<a></a>').attr('href', '#');
+            let newa = $('<a></a>').addClass('dropdown-item').attr('href', '#');
+            let ico = null;
+            if (actionList[i].placeholder != undefined) {
+                ico = $('<em></em>').attr('class', 'glyphicon').html('&nbsp;');
+            } else if (actionList[i].em != undefined) {
+                ico = $('<em></em>').attr('class', actionList[i].em);
+            }
+            newa.append(ico);
             if (actionList[i].text != undefined) {
-                newa.attr('title', actionList[i].text);
+                newa.append(' ' + actionList[i].text);
             }
             newa.on('click', {self: this, action: actionList[i], data: content}, this.onActionClick);
-            let newimg = null;
-            if (actionList[i].placeholder != undefined) {
-                newimg = jQuery('<em></em>').attr('class', 'glyphicon').html('&nbsp;');
-            } else if (actionList[i].em != undefined) {
-                newimg = jQuery('<em></em>').attr('class', actionList[i].em);
-            }
-            newa.append(newimg);
-            td.append(newa);
+            let li = $('<li></li>').append(newa);
+            ul.append(li);
         }
-    },
-    // build cell
-    builddata: function (lineobj, lineIndex, content) {
-        this.line = lineobj;
-        this._buildCell(lineIndex);
-        if (this.options.classes != undefined) {
-            this.cell.addClass(this.options.classes);
-        }
-        if (content[this.mapToData] instanceof Array) {
-            this.buildActions(this.cell, content, content[this.mapToData]);
-        } else if (this.options.actions instanceof Array) {
-            this.buildActions(this.cell, content, this.options.actions);
-        }
-        return this.cell;
-
+        btn.append(ul);
+        return btn;
     },
     // replaces default head builder
     buildhead: function () {
-        let newth = jQuery('<th></th>');
+        let newth = $('<th></th>');
         newth.attr('id', this.table.tableid + '_head_' + this.cellIndex);
         if (this.options.width != undefined) {
             newth.attr('width', this.options.width);
         }
 
         if (this.options.completetitle != undefined) {
-            let newa = jQuery('<a></a>').text('\xa0'); //&nbsp;
+            let newa = $('<a></a>').text('\xa0'); //&nbsp;
             newa.attr('href', '#');
             newa.attr('title', this.options.completetitle);
             newa.on('click', function (e) {
@@ -279,7 +300,7 @@ var TableBuilderActionCell = {
         return newth;
     }
 };
-jQuery.extend(TableBuilderActionCell, TableBuilderBaseCell);
+$.extend(TableBuilderActionCell, TableBuilderBaseCell);
 
 // checkbox cell
 var TableBuilderCheckboxCell = {
@@ -293,14 +314,8 @@ var TableBuilderCheckboxCell = {
         this.type = 'CheckboxCell';
         this._init(table, mapToData, options);
     },
-    // build cell
-    builddata: function (lineobj, lineIndex, content) {
-        this.line = lineobj;
-        this._buildCell(lineIndex);
-        if (this.options.classes != undefined) {
-            this.cell.addClass(this.options.classes);
-        }
-        let newChk = jQuery('<input/>').attr('id', this.table.tableid + '_chkbox_' + lineIndex + '_' + this.cellIndex);
+    printData: function(content, lineIndex){
+        let newChk = $('<input/>').attr('id', this.table.tableid + '_chkbox_' + lineIndex + '_' + this.cellIndex);
         newChk.attr('type', 'checkbox');
         if (typeof content[this.mapToData] === "boolean") {
             newChk.attr('checked', content[this.mapToData]);
@@ -309,7 +324,6 @@ var TableBuilderCheckboxCell = {
         } else if (content[this.mapToData] == 0) {
             newChk.attr('checked', false);
         } else {
-            //console.log(content[this.mapToData]);
             throw 'bad type';
         }
         if (this.options.isEnabledCallback != null) {
@@ -318,8 +332,7 @@ var TableBuilderCheckboxCell = {
             }
         }
         newChk.on('click', {elt: newChk, action: this.options.action, content: content, index: lineIndex}, this.onInputClick);
-        this.cell.append(newChk);
-        return this.cell;
+        return newChk;
     },
     // action on input click
     onInputClick: function (event) {
@@ -329,7 +342,7 @@ var TableBuilderCheckboxCell = {
         }
     }
 };
-jQuery.extend(TableBuilderCheckboxCell, TableBuilderBaseCell);
+$.extend(TableBuilderCheckboxCell, TableBuilderBaseCell);
 
 // date cell
 var TableBuilderDateCell = {
@@ -343,26 +356,23 @@ var TableBuilderDateCell = {
         this.type = 'DateCell';
         this._init(table, mapToData, options);
     },
-    // build cell
-    builddata: function (lineobj, lineIndex, content) {
-        this.line = lineobj;
-        this._buildCell(lineIndex);
+    printData: function(content, lineIndex){
         let datestr = '';
         if (content[this.mapToData] != undefined) {
             let date = content[this.mapToData];
-            if (date.length == 10) {
-                date += ' 00:00:00';
-            }
-            datestr = moment(date).format(this.options.format);
+            if (!isNaN(parseFloat(date)) && isFinite(date)){
+                datestr = DateTime.fromSeconds(date).toFormat(this.options.format);
+            } else{
+                if (date.length == 10) {
+                    date += ' 00:00:00';
+                }
+                datestr = DateTime.fromFormat(date, 'yyyy-MM-dd HH:mm:ss').toFormat(this.options.format);
+            } 
         }
-        if (this.options.classes != undefined) {
-            this.cell.addClass(this.options.classes);
-        }
-        this.cell.html(datestr);
-        return this.cell;
+        return datestr;
     }
 };
-jQuery.extend(TableBuilderDateCell, TableBuilderBaseCell);
+$.extend(TableBuilderDateCell, TableBuilderBaseCell);
 
 // image cell
 var TableBuilderImageCell = {
@@ -376,26 +386,23 @@ var TableBuilderImageCell = {
         this.type = 'ImageCell';
         this._init(table, mapToData, options);
     },
-    // build cell
-    builddata: function (lineobj, lineIndex, content) {
-        this.line = lineobj;
-        this._buildCell(lineIndex);
-        if (this.options.classes != undefined) {
-            this.cell.addClass(this.options.classes);
-        }
+    printData : function(content, lineIndex){
+        let newImg = '';
         if (content[this.mapToData] != undefined) {
-            let newImg = jQuery('<' + this.options.tag + '/>');
+            newImg = $('<' + this.options.tag + '/>');
             if (this.options.tag == 'img') {
-                newImg.attr('src', content[this.mapToData]);
+                newImg.attr('src', content[this.mapToData])
+                if (this.options.imgclass != undefined){
+                    newImg.addClass(this.options.imgclass);
+                }
             } else {
                 newImg.addClass(content[this.mapToData]);
             }
-            this.cell.append(newImg);
         }
-        return this.cell;
+        return newImg;
     }
 };
-jQuery.extend(TableBuilderImageCell, TableBuilderBaseCell);
+$.extend(TableBuilderImageCell, TableBuilderBaseCell);
 
 // link cell
 var TableBuilderLinkCell = {
@@ -409,15 +416,10 @@ var TableBuilderLinkCell = {
         this.type = 'LinkCell';
         this._init(table, mapToData, options);
     },
-    // build cell
-    builddata: function (lineobj, lineIndex, content) {
-        this.line = lineobj;
-        this._buildCell(lineIndex);
-        if (this.options.classes != undefined) {
-            this.cell.addClass(this.options.classes);
-        }
+    printData: function(content, lineIndex){
+        let newa = null;
         if (content[this.mapToData] != undefined) {
-            var text = content[this.mapToData];
+            let text = content[this.mapToData];
             if (this.options.shorten) {
                 if (text.startsWith('https://')) {
                     text = text.substring(8);
@@ -430,18 +432,17 @@ var TableBuilderLinkCell = {
                 }
             }
             //'maxlength
-            let newa = jQuery('<a></a>');
+            newa = $('<a></a>');
             newa.attr('href', content[this.mapToData]);
             newa.attr('target', this.options.target);
             newa.attr("rel", "noopener noreferrer");
             newa.attr('title', content[this.mapToData]);
             newa.html(text);
-            this.cell.append(newa);
         }
-        return this.cell;
+        return newa;
     }
 };
-jQuery.extend(TableBuilderLinkCell, TableBuilderBaseCell);
+$.extend(TableBuilderLinkCell, TableBuilderBaseCell);
 
 // mail cell
 var TableBuilderMailCell = {
@@ -455,36 +456,28 @@ var TableBuilderMailCell = {
         this.type = 'MailCell';
         this._init(table, mapToData, options);
     },
-    // build cell
-    builddata: function (lineobj, lineIndex, content) {
-        this.line = lineobj;
-        this._buildCell(lineIndex);
-        if (this.options.classes != undefined) {
-            this.cell.addClass(this.options.classes);
-        }
+    printData: function(content, lineIndex){
+        let newa = null;
         if (content[this.mapToData] != undefined) {
-            let newa = jQuery('<a></a>');
+            newa = $('<a></a>');
             if (this.options.copycell == true) {
                 newa.attr('href', '#').attr('title', this.options.copytext).on('click', this.onclick);
             } else {
                 newa.attr('href', 'mailto:' + content[this.mapToData]);
             }
             newa.html(content[this.mapToData]);
-            this.cell.append(newa);
         }
-        return this.cell;
+        return newa;
     },
     // click mail cell
     onclick: function (event) {
         event.preventDefault();
-        var $temp = jQuery("<input>");
-        jQuery("body").append($temp);
-        $temp.val(jQuery(event.target).text()).select();
-        document.execCommand("copy");
-        $temp.remove();
+        if (navigator.clipboard != undefined){
+            navigator.clipboard.writeText($(event.target).text());
+        }
     }
 };
-jQuery.extend(TableBuilderMailCell, TableBuilderBaseCell);
+$.extend(TableBuilderMailCell, TableBuilderBaseCell);
 
 // numeric cell
 var TableBuilderNumericCell = {
@@ -520,32 +513,27 @@ var TableBuilderNumericCell = {
             return formatted;
         }
     },
-    // build cell
-    builddata: function (lineobj, lineIndex, content) {
-        this.line = lineobj;
-        this._buildCell(lineIndex);
-        if (this.options.classes != undefined) {
-            this.cell.addClass(this.options.classes);
-        }
+    printData: function(content, lineIndex){
         if (content[this.mapToData] != undefined) {
             let number = this.format(content[this.mapToData]);
             if (this.options.currency.length > 0) {
                 let formatted = '';
                 if (this.options.currencyposafter) {
                     formatted += number + ' ' + this.options.currency;
-                    this.cell.html(formatted);
+                    
                 } else {
-                    this.cell.append(jQuery('<span></span>').addClass('currency').html(this.options.currency));
-                    this.cell.append(jQuery('<span></span>').html(number));
+                    formatted += '<span class="currency">' + this.options.currency + '</span>';
+                    formatted += '<span>' + number + '</span>';
                 }
+                return formatted;
             } else {
-                this.cell.html(number);
+                return number;
             }
         }
-        return this.cell;
+        return '';
     }
 };
-jQuery.extend(TableBuilderNumericCell, TableBuilderBaseCell);
+$.extend(TableBuilderNumericCell, TableBuilderBaseCell);
 
 // status cell
 var TableBuilderStatusCell = {
@@ -559,37 +547,46 @@ var TableBuilderStatusCell = {
         this.type = 'StatusCell';
         this._init(table, mapToData, options);
     },
-    // build cell
-    builddata: function (lineobj, lineIndex, content) {
-        this.line = lineobj;
-        this._buildCell(lineIndex);
-        if (this.options.classes != undefined) {
-            this.cell.addClass(this.options.classes);
-        }
+    printData: function(content, lineIndex){
+        let newImg = null;
         if (content[this.mapToData] != undefined) {
-            let newImg = jQuery('<em/>');
+            newImg = $('<em/>');
             newImg.attr('style', this.options.aIcons[content[this.mapToData]].style);
             newImg.attr('title', this.options.aIcons[content[this.mapToData]].title);
             newImg.addClass(this.options.aIcons[content[this.mapToData]].class);
-            this.cell.append(newImg);
         }
-        return this.cell;
+        return newImg;
     }
 };
-jQuery.extend(TableBuilderStatusCell, TableBuilderBaseCell);
+$.extend(TableBuilderStatusCell, TableBuilderBaseCell);
 
 // main table builder
 var TableBuilder = {
+    modecard: false,
+    showcardmode: true,
     url: null, // url of function
     cols: null, // table columns definitions
     options: null,
     divid: null, //id of table <div>
-    tableid: null, // table id
+    tableid: null, // table id,
     mainDiv: null, // table div object
+    heads: null,
+    bottoms: null,
     tableParams: null, // parameters posted to url
-    paginationDiv: null, // div for pagination
+    paginationtd: null, // div for pagination
+    paginationtd2 : null,
+    filterdiv : null,
+    toggletd: null,
+    modeTableBtn: null,
+    modeCardBtn: null,
+    filterBtn: null,
     tableBody: null, // table body element
     tableFoot: null, // table footer element
+    tableFootButtons: null,
+    tableFootItemsPerPage: null,
+    sortCells: {},
+    defaultcolumn : null,
+    defaultorder: null,
     tableHead: null, // table header element
     searchinput: null, // search input element
     selpage: null, // page selector element
@@ -598,7 +595,8 @@ var TableBuilder = {
     iTotalLines: null, // total line number
     iCurrentPage: null, // current page
     iNbPages: null, //number of pages
-    columns: null, // column objects
+    columns: [], // column objects
+    columnnames: [],
     columnIndex: null, //column index
     lineIndex: null, //line index
     aTabsQueries: null, //xhr tab queries to cancel, for search engine
@@ -609,32 +607,70 @@ var TableBuilder = {
      @param string url url for table builder
      @param array cols table columns
      @param object options
+     @param object params
      */
-    init: function (element, url, cols, options) {
+    init: function (element, url, cols, options, params) {
         this.url = url;
         this.cols = cols;
         this.options = options;
         this.divid = element.id;
         this.tableid = this.divid + '_table';
-        this.mainDiv = jQuery('#' + this.divid);
-        this.tableParams = {
-            itemsperpage: this.options.itemsperpage,
-            sortBy: null,
-            start: 0,
-            searchTerm: ''
-        };
+        this.mainDiv = $('#' + this.divid);
+        this.tableParams = params;
         this.selectors = [];
         this.data = [];
         this.iTotalLines = 0;
-        this.iCurrentPage = 1;
         this.iNbPages = 0;
-        this.columns = [];
         this.columnIndex = -1;
         this.lineIndex = -1;
         this.aTabsQueries = new Array();
+        this.showcardmode = this.options.showcardmode;
+        this.modecard = this.options.modecard;
+        this.setCurrentPage();
         this.defineColumns();
+        if (this.showcardmode && this.options.automode){
+            $( window ).on('resize', {self : this}, this.resize)
+            this.adaptdisplay(false);
+        } else {
+            this.modecard = this.options.modecard;
+        }
         this.display();
     },
+    adaptdisplay: function(display){
+        var oldmode = this.modecard;
+        if (this.mainDiv.width() < this.options.breakpoint){
+            this.modecard = true;
+        } else{
+            this.modecard = false;
+        }
+        if (display && oldmode != this.modecard){
+            this.display();
+        }
+    },
+    resize: function(e) {
+        e.data.self.adaptdisplay(true);
+    },
+    setCurrentPage: function(){
+        if (this.tableParams.start == 0){
+            this.iCurrentPage = 1;
+        } else {
+            this.iCurrentPage = (this.tableParams.start / this.tableParams.itemsperpage) + 1;
+        }
+    },
+    setUrl: function() {
+        if (this.options.updateurl) {
+            let url = window.location.origin + window.location.pathname + '?';
+            let params = new URLSearchParams(window.location.search);
+            if (params.has(this.options.getattribute)){
+                var jObj = JSON.parse(params.get(this.options.getattribute));
+            } else{
+                var jObj = {};
+            }
+            jObj[this.divid] = this.buildParams();
+            params.set(this.options.getattribute, JSON.stringify(jObj));
+            history.pushState({}, "", url + params.toString());
+        }
+    }, 
     // image to be displayed on table load
     buildAjaxImg: function () {
         return '<em class="' + this.options.ajaximgname + '"></em>';
@@ -645,6 +681,7 @@ var TableBuilder = {
             this.searchinput.val('');
         }
         this.tableParams.searchTerm = '';
+        this.setUrl();
     },
     // reset table page to 1
     resettablepage: function () {
@@ -660,41 +697,117 @@ var TableBuilder = {
         event.data.self.resettablepage();
         event.data.self.reload();
     },
-    // builds table
-    display: function () {
-        let heads = jQuery('<div></div>').attr('id', this.divid + '_beforetable').addClass(this.options.headersclass);
-        this.mainDiv.append(heads);
-        this.paginationDiv = jQuery('<div></div>').attr('id', this.divid + '_pagination').addClass(this.options.paginationclass);
-        heads.append(this.paginationDiv);
-        let inputCsrf = jQuery('<input/>').attr('type', 'hidden').attr('id', this.tableid + '_csrf').val(this.options.csrf);
-        let newForm = jQuery('<form/>').attr('action', '').append(inputCsrf);
-        if (this.options.searchable) {
-            this.searchinput = jQuery('<input/>').attr('type', 'text').attr('id', this.divid + '_searchinput')
-                    .attr('placeholder', this.options.searchLabel).addClass('form-control input-sm');
-            this.searchinput.on('keyup', {self: this}, this.searchInputChange);
-            let resetButton = jQuery('<button/>').addClass(this.options.searchresetbuttonclass).attr('type', 'button').attr('id', this.divid + '_searchresetbtn')
-                    .attr('title', this.options.searchresetlabel).html('x').on('click', {self: this}, this.resetinputclick);
-            let resetbuttondiv = jQuery('<div/>').addClass(this.options.searchresetbuttondivclass).append(resetButton);
-            let searchinputgrpclass = jQuery('<div/>').addClass(this.options.searchinputgrpclass).append(this.searchinput).append(resetbuttondiv);
-            let searchdiv = jQuery('<div></div>').attr('id', this.divid + '_searchdiv').addClass(this.options.searchdivclass).append(searchinputgrpclass);
-            newForm.append(searchdiv);
+    switchMode: function(e){
+        self = e.data.self;
+        self.modecard = e.data.modecard;
+        if (self.modecard){
+            self.modeTableBtn.show();
+            self.modeCardBtn.hide();
+        }else{
+            self.modeTableBtn.hide();
+            self.modeCardBtn.show();
         }
-        heads.append(newForm);
-        let newtable = jQuery('<table></table>');
+        self.display();
+    },
+    dofilterdivid: function() {
+        if (this.options.filterdivid != undefined){
+            return '#' + this.options.filterdivid;
+        }else {
+            return '#' + this.divid + '_filters';
+        }
+    },
+    togglefilters: function(e){
+        e.data.self.filterdiv.toggle();
+    },
+    printBeforeTable: function(){
+        let headline = $('<tr></tr>');
+        let table = $('<table></table>').attr('id', this.divid + '_beforetable').addClass(this.options.headersclass).append(headline);
+        let inputCsrf = $('<input/>').attr('type', 'hidden').attr('id', this.tableid + '_csrf').val(this.options.csrf);
+        this.heads = $('<form/>').attr('action', '').append(inputCsrf).append(table);
+        this.paginationtd = $('<td></td>').attr('id', this.divid + '_pagination').addClass(this.options.paginationclass);
+        this.toggletd = $('<td></td>').addClass(this.options.togglebtnclass);
+        if (this.showcardmode){
+            this.modeTableBtn = $('<em>').attr('id', this.divid + '_mode_table_btn')
+                .addClass(this.options.modetablebtn).attr('title', this.options.tableModeLabel).on('click', {self: this, modecard: false}, this.switchMode);
+            this.modeCardBtn = $('<em>').attr('id', this.divid + '_mode_card_btn').
+                addClass(this.options.modecardbtn).attr('title', this.options.cardModeLabel).on('click', {self: this, modecard: true}, this.switchMode);
+            if (this.modecard){
+                this.modeCardBtn.hide();
+            }else{
+                this.modeTableBtn.hide();
+            }
+        }
+        this.toggletd.append(this.modeTableBtn).append(this.modeCardBtn);
+        if (this.options.buildfilters){
+            this.filterBtn = $('<em/>').addClass(this.options.filterbtn).attr('title', this.options.togglefilters).on('click', {self: this}, this.togglefilters);;
+            this.filterdiv = $(this.dofilterdivid());
+            this.filterdiv.hide();
+            this.heads.append(this.filterdiv);
+            this.toggletd.append(this.filterBtn);
+        }
+        if (this.options.searchable) {
+            this.searchinput = $('<input/>').attr('type', 'text').attr('id', this.divid + '_searchinput')
+                    .attr('placeholder', this.options.searchLabel).addClass(this.options.searchinputclass).val(this.tableParams.searchTerm);
+            this.searchinput.on('keyup', {self: this}, this.searchInputChange);
+            let xicon = $('<em/>').addClass("fa-solid fa-circle-xmark");
+            let resetButton = $('<button/>').addClass(this.options.searchresetbuttonclass).attr('type', 'button').attr('id', this.divid + '_searchresetbtn')
+                    .attr('title', this.options.searchresetlabel).append(xicon).on('click', {self: this}, this.resetinputclick);
+            let resetbuttondiv = $('<div/>').addClass(this.options.searchresetbuttondivclass).append(resetButton);
+            let searchinputgrpclass = $('<div/>').addClass(this.options.searchinputgrpclass).append(this.searchinput).append(resetbuttondiv);
+            let searchtd = $('<td></td>').attr('id', this.divid + '_search').addClass(this.options.searchdivclass).append(searchinputgrpclass);
+            headline.append(searchtd);
+        }
+        headline.append(this.toggletd).append(this.paginationtd);
+        this.mainDiv.append(this.heads);
+    },
+    printAfterTable: function(){
+        let bottomline = $('<tr></tr>');
+        this.bottoms = $('<table></table>').attr('id', this.divid + '_aftertable').addClass(this.options.bottomclass).append(bottomline);
+        this.paginationtd2 = $('<td></td>').attr('id', this.divid + '_pagination2').addClass(this.options.paginationclass);
+        this.tableFootButtons = $('<td></td>').attr('id', 'buttons_' + this.tableid);
+        this.tableFootItemsPerPage  = $('<td></td>').attr('id', this.tableid + '_itemsperpage').addClass(this.options.pagecontclass);
+        bottomline.append(this.tableFootButtons);
+        bottomline.append(this.tableFootItemsPerPage);
+        bottomline.append(this.paginationtd2);
+        this.mainDiv.append(this.bottoms);
+    },
+    displayTable: function(){
+        this.printBeforeTable();
+        let newtable = $('<table></table>');
         newtable.attr('id', this.tableid);
         newtable.addClass(this.options.tableClass);
-        this.tableBody = jQuery('<tbody></tbody>');
-        this.tableHead = jQuery('<thead></thead>');
-        this.tableFoot = jQuery('<tfoot></tfoot>');
+        this.tableBody = $('<tbody></tbody>');
+        this.tableHead = $('<thead></thead>');
+        let tableFoot = $('<tfoot></tfoot>');
+        let newline = $('<tr></tr>').attr('id', this.tableid + '_line_footer');
+        this.tableFoot = $('<td></td>').attr('colspan', this.colspan).addClass(this.options.footerclass).appendTo(newline);
+        newline.appendTo(tableFoot);
         newtable.append(this.tableHead);
-        newtable.append(this.tableFoot);
+        newtable.append(tableFoot);
         newtable.append(this.tableBody);
         this.buildHead();
         this.mainDiv.append(newtable);
+        this.printAfterTable();
         this.doItemsPerPageChoice();
-        this.doButtons();
-        this.reload();
+    },
+    displayCards : function () {
+        this.printBeforeTable();
+        this.tableBody = $('<div/>').attr('id', this.tableid).addClass(this.options.cardgroupclass);
+        this.tableFoot = $('<div/>').addClass(this.options.cardfooter);
+        this.mainDiv.append(this.tableBody).append(this.tableFoot);
+        this.printAfterTable();
+        this.doItemsPerPageChoice();
+    },
+    // builds table
+    display: function () {
+        this.mainDiv.html('');
+        if (this.modecard){
+            this.displayCards();
+        } else {
+            this.displayTable();
+        }
         this.resetOrder(true);
+        this.reload();
     },
     // reload table data
     reload: function () {
@@ -706,63 +819,20 @@ var TableBuilder = {
                 this.options.itemsperpage > 0 &&
                 this.options.pagechoices != undefined &&
                 this.options.pagechoices.length > 0
-                ) {
-            let nbPgs = jQuery('<div></div>').addClass(this.options.eltspageclass);
-            let divP = jQuery('<div></div>').addClass(this.options.pagecontclass);
-            let newsel2 = jQuery('<select></select>').attr('id', this.tableid + '_selEltsPerpage').addClass('form-control input-sm');
+        ) {
+            let newsel2 = $('<select></select>').attr('id', this.tableid + '_selEltsPerpage').addClass('form-control input-sm');
             for (var j = 0; j < this.options.pagechoices.length; j++) {
                 let str = this.options.pagechoices[j];
-                let newopt2 = jQuery('<option></option>').attr('value', str).html(str);
-                if (str == this.options.itemsperpage) {
+                let newopt2 = $('<option></option>').attr('value', str).html(str);
+                if (str == this.tableParams.itemsperpage) {
                     newopt2.attr('selected', 'selected');
                 }
                 newsel2.append(newopt2);
             }
             newsel2.on('change', {self: this}, this.changeItemsPerPage);
-            divP.append(newsel2);
-            nbPgs.append(divP);
-            let lbl = jQuery('<span></span>').html(' ' + this.options.eltsParPageLabel);
-            divP.append(lbl);
-            this.mainDiv.append(nbPgs);
-        }
-    },
-    // builds button div for multiple actions
-    doButtons: function () {
-        if (this.options.buttons.length > 0) {
-            let buttondiv = jQuery('<div></div>').attr('id', 'buttons_' + this.tableid);
-            buttondiv.html('<i class="' + this.options.buttondivarrow + '"></i>');
-            buttondiv.addClass(this.options.bottomclass);
-            for (var i = 0; i < this.options.buttons.length; i++) {
-                id = this.options.buttons[i].id != undefined ? this.options.buttons[i].id : 'button_' + this.tableid + '_' + i;
-                let cl = this.options.buttons[i].class != undefined ? this.options.buttons[i].class : this.options.buttonclass;
-                newbtn = jQuery('<button></button>').attr('id', id).attr('type', 'button').addClass(cl);
-                if (this.options.buttons[i].title != undefined) {
-                    newbtn.attr('title', this.options.buttons[i].title);
-                }
-                content = '';
-                if (this.options.buttons[i].img != undefined) {
-                    content += '<img src="' + this.options.buttons[i].img + '"/>';
-                }
-                if (this.options.buttons[i].em != undefined) {
-                    content += '<em class="' + this.options.buttons[i].em + '"></em>';
-                }
-                if (this.options.buttons[i].text != undefined) {
-                    content += ' ' + this.options.buttons[i].text;
-                }
-                let applyFunction = function (event) {
-                    data = event.data.table.data;
-                    selectors = event.data.table.selectors;
-                    action = event.data.action;
-                    for (var i = 0; i < selectors.length; i++) {
-                        if (selectors[i].prop('checked')) {
-                            action(data[i]);
-                        }
-                    }
-                }
-                newbtn.html(content).on('click', {table: this, action: this.options.buttons[i].action}, applyFunction);
-                buttondiv.append(newbtn);
-            }
-            this.mainDiv.append(buttondiv);
+            this.tableFootItemsPerPage.append(newsel2);
+            let lbl = $('<span></span>').html(this.options.eltsParPageLabel);
+            this.tableFootItemsPerPage.append(lbl);
         }
     },
     // event on search input change everytime a character is added/removes
@@ -770,6 +840,7 @@ var TableBuilder = {
         //if (event.data.self.searchinput.val().length > 0){
         event.data.self.tableParams.searchTerm = event.data.self.searchinput.val();
         event.data.self.resettablepage();
+        event.data.self.setUrl();
         event.data.self.reload();
         //}
     },
@@ -815,27 +886,54 @@ var TableBuilder = {
                 this.columnIndex++;
                 obj.attachOrder(this.columnIndex);
                 this.columns[this.columnIndex] = obj;
-                if (obj.options.defaultOrder != undefined) {
-                    this.tableParams.sortBy = obj.setOrderQuery();
+                this.columnnames[obj.mapToData] = obj;
+                this.addColumnOrder(obj);
+                if (obj.options.defaultOrder != undefined && obj.options.defaultOrder != null){
+                    this.defaultcolumn = obj.mapToData;
+                    this.defaultorder = obj.options.defaultOrder == 'asc' ? ASC : DESC;
                 }
             }
-            this.colspan = (this.options.buttons.length > 0) ? this.columns.length + 1 : this.columns.length;
+            this.colspan = (this.options.addselectline) ? this.columns.length + 1 : this.columns.length;
+            if (this.defaultcolumn == null){
+                this.defaultcolumn = this.cols[0].data;
+                this.defaultorder = 1;
+            }
         } else {
             throw 'No cols';
         }
-
     },
+    addColumnOrder: function (obj) {
+        if (obj.options.sortable == true) {
+            this.sortCells[obj.mapToData] = [];
+            if (obj.options.customAsc != undefined) {
+                this.sortCells[obj.mapToData][ASC] = obj.options.customAsc;
+            } else {
+                this.sortCells[obj.mapToData][ASC] = obj.mapToData + ':asc';
+            }
+            if (obj.options.customDesc != undefined) {
+                this.sortCells[obj.mapToData][DESC] = obj.options.customDesc;
+            } else {
+                this.sortCells[obj.mapToData][DESC] = obj.mapToData + ':desc';
+            }
+        }
+    },
+    getColumnOrder: function (field, order){
+        if ( this.sortCells[field] != undefined && this.sortCells[field][order] != undefined){
+            return this.sortCells[field][order];
+        }
+        return '';
+    }, 
     // build table heads
     buildHead: function () {
         this.tableHead.html('');
-        let newline = jQuery('<tr></tr>');
+        let newline = $('<tr></tr>');
         newline.attr('id', this.tableid + "_head")
-        if (this.options.buttons.length > 0) {
-            let newth = jQuery('<th></th>');
+        if (this.options.addselectline) {
+            let newth = $('<th></th>');
             newth.attr('id', this.tableid + '_head_colselect');
             newth.attr('width', '20px');
-            let newChk = jQuery('<input/>').attr('id', this.tableid + '_chkbox_collchk');
-            newChk.attr('type', 'checkbox');
+            let newChk = $('<input/>').attr('id', this.tableid + '_chkbox_collchk');
+            newChk.attr('type', 'checkbox').attr('title', this.options.chkheadlabel);
             newChk.on('click', {self: this}, this.onChkboxHeaderClick);
             newth.append(newChk);
             newline.append(newth);
@@ -847,53 +945,108 @@ var TableBuilder = {
     },
     // reset table order
     resetOrder: function (show) {
-        for (var i = 0; i < this.columns.length; i++) {
-            this.columns[i].resetOrder(show);
+        if (show == undefined){
+            show = false;
         }
+        for (var i = 0; i < this.columns.length; i++) {
+            this.columns[i].resetOrder();
+        }
+        if (show){
+            let name = '';
+            let sortorder = '';
+            if (this.tableParams.sortBy != ''){
+                let sortBy = this.tableParams.sortBy;
+                sortBy = sortBy.split(';')[0].split(':');
+                name = sortBy[0];
+                sortorder = sortBy[1];     
+            }
+            if (name != '' && this.columnnames[name] != undefined &&  this.columnnames[name].options.sortable){
+                this.columnnames[name].sortStatus = (sortorder == 'asc' ? ASC : DESC);
+                this.columnnames[name].displayarrows();
+            } else {
+                this.columnnames[this.defaultcolumn].sortStatus = this.defaultorder
+                this.columnnames[this.defaultcolumn].displayarrows();;
+                this.tableParams.sortBy = this.getColumnOrder(this.defaultcolumn, this.defaultorder);
+            }
+        }
+    },
+    buildSelector: function(i){
+        let newChk = $('<input/>').attr('id', this.tableid + '_chkboxln_' + i);
+        newChk.addClass(this.tableid + '_lineChkBox');
+        newChk.attr('type', 'checkbox').attr('title', this.options.selectelement);
+        this.selectors.push(newChk);
+        return newChk;
     },
     // build data lines
     printDataLine: function () {
         this.tableBody.html('');
-        var j = 0;
         this.selectors = [];
         var trigger = '';
         if (this.options.rowcontextualtrigger != undefined && this.options.rowcontextualtrigger.length > 0) {
             trigger = this.options.rowcontextualtrigger;
         }
         for (var i = 0; i < this.data.length; i++) {
-            let newline = jQuery('<tr></tr>');
+            let newline = $('<tr></tr>');
             if (trigger != '') {
                 if (this.data[i][trigger] != undefined) {
                     newline.addClass(this.data[i][trigger]);
                 }
             }
             newline.attr('id', this.tableid + '_line_' + i);
-            if (this.options.buttons.length > 0) {
-                let newtd = jQuery('<td></td>');
+            if (this.options.addselectline) {
+                let newtd = $('<td></td>');
                 newtd.attr('id', this.tableid + '_dataline_' + i + '_chktd');
-                let newChk = jQuery('<input/>').attr('id', this.tableid + '_chkboxln_' + i);
-                newChk.addClass(this.tableid + '_lineChkBox');
-                newChk.attr('type', 'checkbox');
-                this.selectors.push(newChk);
-                newtd.append(newChk);
+                newtd.append(this.buildSelector(i));
                 newline.append(newtd);
             }
-            for (j = 0; j < this.columns.length; j++) {
+            for (var j = 0; j < this.columns.length; j++) {
                 newline.append(this.columns[j].builddata(newline, i, this.data[i]));
             }
             newline.appendTo(this.tableBody);
         }
     },
+    printDataCards : function() {
+        this.tableBody.html('');
+        var trigger = '';
+        if (this.options.rowcontextualtrigger != undefined && this.options.rowcontextualtrigger.length > 0) {
+            trigger = this.options.rowcontextualtrigger;
+        }
+        for (var i = 0; i < this.data.length; i++) {
+            let newCard = null;
+            if (this.options.customprintdatacard != undefined){
+                newCard  = this.options.customprintdatacard(this.data[i], this, i, trigger);
+            } else{
+                newCard = $('<div></div>').addClass(this.options.cardcol);
+                let newCardCard = $('<div></div>').addClass(this.options.cardclass);
+
+                let newCardContent = $('<div></div>').addClass(this.options.cardcontentclass).attr('id', this.tableid + '_line_' + i);
+                if (trigger != '') {
+                    if (this.data[i][trigger] != undefined) {
+                        newCardContent.addClass(this.data[i][trigger]);
+                    }
+                }
+                var start = 0;
+                if (this.options.addselectline) {
+                    let chk = $('<span>').attr('id', this.tableid + '_dataline_' + i + '_chktd').addClass(this.options.cardselector).append(this.buildSelector(i));
+                    newCardContent.append(chk).append(this.columns[0].builddata(newCardContent, i, this.data[i]));
+                    start++;
+                }
+                for (var j = start; j < this.columns.length; j++) {
+                    newCardContent.append(this.columns[j].builddata(newCardContent, i, this.data[i]));
+                }
+                newCardCard.append(newCardContent);
+                newCard.append(newCardCard);
+            }
+            newCard.appendTo(this.tableBody);
+        }
+    },
     // build table footer
     printFooter: function (str) {
-        this.tableFoot.html('');
-        let newline = jQuery('<tr></tr>').attr('id', this.tableid + '_line_footer');
-        let newtd = jQuery('<td></td>').attr('colspan', this.colspan).addClass(this.options.footerclass).html(str).appendTo(newline);
-        newline.appendTo(this.tableFoot);
+        this.tableFoot.html(str);
     },
     // event if column header is clicked
     onChkboxHeaderClick: function (event) {
-        jQuery('.' + event.data.self.tableid + '_lineChkBox').each(function (ln_num) {
+        $('.' + event.data.self.tableid + '_lineChkBox').each(function (ln_num) {
             this.checked = event.currentTarget.checked;
         });
     },
@@ -901,102 +1054,172 @@ var TableBuilder = {
     selectpage: function (i) {
         this.iCurrentPage = i;
         this.tableParams.start = (this.iCurrentPage * this.options.itemsperpage) - this.options.itemsperpage;
+        this.setUrl();
         this.reload();
     },
     // do pagination div
     doPagination: function () {
         if (this.options.itemsperpage > 0) {
-            this.paginationDiv.html('');
-            let maingrp = jQuery('<div></div>').addClass("btn-group btn-group-sm").attr('role', "group");
+            this.paginationtd.html('');
+            this.paginationtd2.html('');
+            let maingrp = $('<div></div>').addClass("btn-group btn-group-sm").attr('role', "group");
             this.iNbPages = Math.floor(this.iTotalLines / this.options.itemsperpage) +
                     (this.iTotalLines % this.options.itemsperpage > 0 ? 1 : 0);
             if (this.iCurrentPage > 2) {
-                let dblleftbtn = jQuery('<button></button>')
+                let dblleftbtn = $('<button></button>')
                         .attr('type', "button")
                         .addClass("btn btn-default")
                         .on('click', {self: this}, function (event) {
                             event.data.self.selectpage(1)
                         })
-                        .append(jQuery('<em/>').addClass(this.options.dblleftarrow));
+                        .append($('<em/>').addClass(this.options.dblleftarrow));
                 maingrp.append(dblleftbtn);
             }
             if (this.iCurrentPage > 1) {
-                let leftbtn = jQuery('<button></button>')
+                let leftbtn = $('<button></button>')
                         .attr('type', "button")
                         .addClass("btn btn-default")
                         .on('click', {self: this}, function (event) {
                             event.data.self.selectpage(event.data.self.iCurrentPage - 1)
-                        }).append(jQuery('<em/>').addClass(this.options.leftarrow));
+                        }).append($('<em/>').addClass(this.options.leftarrow));
                 maingrp.append(leftbtn);
             }
             if (this.iNbPages > 1) {
-                let selgrp = jQuery('<div></div>').addClass("btn-group").attr('role', "group");
-                this.selpage = jQuery('<select></select>').attr('id', this.tableid + '_selpage').addClass('form-control input-sm');
+                let selgrp = $('<div></div>').addClass("btn-group").attr('role', "group");
+                this.selpage = $('<select></select>').attr('id', this.tableid + '_selpage').addClass('form-control input-sm');
                 for (var i = 1; i <= this.iNbPages; i++) {
-                    let newopt = jQuery('<option></option>').attr('value', i).html(i);
+                    let newopt = $('<option></option>').attr('value', i).html(i);
                     if (i == this.iCurrentPage) {
                         newopt.attr('selected', 'selected');
                     }
                     this.selpage.append(newopt);
                 }
                 this.selpage.on('change', {self: this}, function (event) {
-                    event.data.self.selectpage(jQuery(this).children('option:selected').val());
+                    event.data.self.selectpage($(this).children('option:selected').val());
                 });
                 selgrp.append(this.selpage);
                 maingrp.append(selgrp);
             }
             if (this.iCurrentPage < this.iNbPages) {
-                let rightbtn = jQuery('<button></button>')
+                let rightbtn = $('<button></button>')
                         .attr('type', "button")
                         .addClass("btn btn-default")
                         .on('click', {self: this}, function (event) {
                             event.data.self.selectpage(event.data.self.iCurrentPage + 1)
-                        }).append(jQuery('<em/>').addClass(this.options.rightarrow));
+                        }).append($('<em/>').addClass(this.options.rightarrow));
                 maingrp.append(rightbtn);
             }
             if (this.iNbPages - this.iCurrentPage >= 2) {
-                let dblrightbtn = jQuery('<button></button>')
+                let dblrightbtn = $('<button></button>')
                         .attr('type', "button")
                         .addClass("btn btn-default")
                         .on('click', {self: this}, function (event) {
                             event.data.self.selectpage(event.data.self.iNbPages)
-                        }).append(jQuery('<em/>').addClass(this.options.dblrightarrow));
+                        }).append($('<em/>').addClass(this.options.dblrightarrow));
                 maingrp.append(dblrightbtn);
             }
-            this.paginationDiv.append(maingrp);
-            this.paginationDiv.append(jQuery('<span></span>').html(this.iTotalLines + ' ' + this.options.eltLabel));
+            let total = $('<span></span>').html(this.iTotalLines + ' ' + this.options.eltLabel)
+            this.paginationtd.append(maingrp);
+            this.paginationtd.append(total);
+            this.paginationtd2.append(this.paginationtd.children().clone(true, true));
         }
     },
     // event if items per page changed
     changeItemsPerPage: function (e) {
         self = e.data.self;
-        self.options.itemsperpage = jQuery(this).children('option:selected').val();
+        self.options.itemsperpage = $(this).children('option:selected').val();
         self.resettablepage();
         self.tableParams.itemsperpage = self.options.itemsperpage;
         if (self.options.eltsPerPageChngCallback != undefined) {
             self.options.eltsPerPageChngCallback(self.options.itemsperpage);
         }
+        self.setUrl();
         self.reload();
+    },
+    applyaction: function(action) {
+        for (var i = 0; i < this.selectors.length; i++) {
+            if (this.selectors[i].prop('checked')) {
+                action(this.data[i]);
+            }
+        }
+    },
+    putLoadImage: function(){
+        this.tableBody.html('<tr><td colspan="' + this.colspan + '">' + this.buildAjaxImg() + '</td></tr>')
+    },
+    putErrorMessage: function(){
+        if (this.modecard){
+            this.tableBody.html('<p>' + this.options.ajaxerrormsg + '</p>');
+        } else {
+            this.tableBody.html('<tr><td colspan="' + this.colspan + '">' + this.options.ajaxerrormsg + '</td></tr>');
+        }
+    },
+    processData: function(data){
+        if (this.modecard ){
+            this.addCards(data);
+        } else {
+            this.addTableLines(data);
+        }
+    },
+    addCards: function(data){
+        if (data.aLines.length > 0) {
+            this.data = data.aLines;
+            this.iTotalLines = data.iTotalLines;
+            this.doPagination();
+            this.printDataCards();
+            if (
+                data.sFooter !== undefined && (typeof data.sFooter == 'string' || data.sFooter instanceof String) &&
+                data.sFooter.length > 0
+            ) {
+                this.printFooter(data.sFooter);
+            }
+            if (this.options.aftertableload != undefined) {
+                this.options.aftertableload(this, data);
+            }
+        } else {
+            this.tableBody.html('<div>' + this.options.nodatastr + '</div>');
+        }
+    },
+    addTableLines: function(data){
+        if (data.aLines.length > 0) {
+            this.data = data.aLines;
+            this.iTotalLines = data.iTotalLines;
+            this.doPagination();
+            this.printDataLine();
+            if (
+                data.sFooter !== undefined && (typeof data.sFooter == 'string' || data.sFooter instanceof String) &&
+                data.sFooter.length > 0
+            ) {
+                this.printFooter(data.sFooter);
+            }
+            if (this.options.aftertableload != undefined) {
+                this.options.aftertableload(this, data);
+            }
+        } else {
+            this.tableBody.html('<tr><td colspan="' + this.colspan + '">' + this.options.nodatastr + '</td></tr>');
+        }
+    },
+    buildParams: function() {
+        let myParams = null;
+        if (this.options.paramsFunction != null) {
+            myParams = $.extend({}, this.tableParams, this.options.paramsFunction(), this.options.additionalParams);
+        } else {
+            myParams = $.extend({}, this.tableParams, this.options.additionalParams);
+        }
+        return myParams;
     },
     // load data
     loadDataByAjax: function () {
         var self = this;
-        let myParams = null;
-        if (self.options.paramsFunction != null) {
-            let paramsFn = self.options.paramsFunction();
-            myParams = jQuery.extend({}, self.tableParams, paramsFn, self.options.additionalParams);
-        } else {
-            myParams = jQuery.extend({}, self.tableParams, self.options.additionalParams);
-        }
-        jQuery.ajax({
+        
+        $.ajax({
             url: self.url,
-            data: myParams,
+            data: self.buildParams(),
             encoding: self.options.encoding,
             type: 'post',
             dataType: 'json',
             cache: false,
             headers: {
-                'X-CSRF-Token': jQuery('#' + self.tableid + '_csrf').val()
+                'X-CSRF-Token': self.options.csrf
             },
             beforeSend: function (xhr) {
                 let query = null;
@@ -1006,33 +1229,16 @@ var TableBuilder = {
                     }
                 }
                 self.aTabsQueries.push(xhr);
-                self.tableBody.html('<tr><td colspan="' + self.colspan + '">' + self.buildAjaxImg() + '</td></tr>');
+                self.putLoadImage();
             }
         }).done(function (data) {
             self.aTabsQueries.pop();
-            if (data.aLines.length > 0) {
-                self.data = data.aLines;
-                self.iTotalLines = data.iTotalLines;
-                self.doPagination();
-                self.printDataLine();
-                let width = (self.options.buttons.length > 0) ? self.columns.length + 1 : self.columns.length;
-                if (
-                        data.sFooter !== undefined && (typeof data.sFooter == 'string' || data.sFooter instanceof String) &&
-                        data.sFooter.length > 0
-                        ) {
-                    self.printFooter(data.sFooter);
-                }
-                if (self.options.aftertableload != undefined) {
-                    self.options.aftertableload(this, data);
-                }
-            } else {
-                self.tableBody.html('<tr><td colspan="' + self.colspan + '">' + self.options.nodatastr + '</td></tr>');
-            }
+            self.processData(data);
         }).fail(function (jqXHR, textStatus, errorThrown) {
             if (jqXHR.status == 419) {
                 location.reload();
             } else {
-                self.tableBody.html('<tr><td colspan="' + self.colspan + '">' + self.options.ajaxerrormsg + '</td></tr>');
+                self.putErrorMessage();
             }
         });
     }
@@ -1047,25 +1253,25 @@ if (typeof Object.create !== 'function') {
     };
 }
 // table builder function
-(function (jQuery) {
+(function ($) {
     /*
      @param string url url for table builder
      @param array cols table columns
      @params object options
      */
-    jQuery.fn.tablebuilder = function (url, cols, options) {
+    $.fn.tablebuilder = function (url, cols, options, params) {
         return this.each(function () {
-            var element = jQuery(this);
+            var element = $(this);
             if (element.prop('tagName') != 'DIV')
                 throw 'not a DIV';
             // Return early if this element already has a plugin instance
             if (element.data('mytable'))
                 return element.data('mytable');
             var mytable = Object.create(TableBuilder);
-            mytable.init(this, url, cols, options);
+            mytable.init(this, url, cols, options, params);
             // pass options to plugin constructor
-            element.data('mytable', mytable);
+            element.data('tablebuilder', mytable);
         });
     };
 
-})(jQuery);
+})($);

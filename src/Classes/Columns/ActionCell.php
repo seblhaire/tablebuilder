@@ -1,14 +1,16 @@
 <?php
 
-namespace Seblhaire\TableBuilder;
+namespace Seblhaire\TableBuilder\Classes\Columns;
+
+use Seblhaire\TableBuilder\Classes\Columns\AbstractTableColumn;
 
 /**
  * Action cell: buttons that trigger actions
  */
 class ActionCell extends AbstractTableColumn {
 
-    protected $name = 'TableBuilderActionCell';
-    protected $type = 'action';
+    protected string $name = 'TableBuilderActionCell';
+    protected string $type = 'action';
 
     /**
      * constructor
@@ -17,7 +19,7 @@ class ActionCell extends AbstractTableColumn {
      *            field name that contains column content
      * @param array $aOptions
      */
-    public function __construct($sDataBindTo, $aOptions) {
+    public function __construct(string $sDataBindTo, array $aOptions) {
         $this->dataBindTo = $sDataBindTo;
         $this->aOptions = array_replace(config('tablebuilder.action'), $aOptions);
     }
@@ -28,7 +30,10 @@ class ActionCell extends AbstractTableColumn {
      * @return string
      */
     public function printOptions() {
-        $sStr = $this->_options();
+        $sStr = $this->_options() . ',icoclass :"' . $this->aOptions['icoclass'] . '"';
+        if (isset($this->aOptions['actiontext'])) {
+            $sStr .= ", actiontext : '" . $this->translateOrPrint($this->aOptions['actiontext']) . "'";
+        }
         if (isset($this->aOptions['actions']) && count($this->aOptions['actions']) > 0) {
             $sStr .= ',actions : [';
             $sStr2 = '';

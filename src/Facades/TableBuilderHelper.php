@@ -1,6 +1,6 @@
 <?php
 
-namespace Seblhaire\TableBuilder;
+namespace Seblhaire\TableBuilder\Facades;
 
 use Illuminate\Support\Facades\Facade;
 

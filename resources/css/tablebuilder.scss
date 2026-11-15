@@ -1,36 +1,52 @@
 .TableBuilderHeads{
 	width:100%;
 	margin-bottom:10px;
-        vertical-align: middle;
 }
-.TableBuilderHeads .TableBuilderSearch{
-    width:50%;
+.TableBuilderSearchInput{
+	width:30px !important;
 }
-
-.TableBuilderEltsPage select, .TableBuilderPagination select{
+.TableBuilderToggleBtns{
+	width: 85px;
+}
+.TableBuilderToggleBtns em{
+	font-size:25px;
+}
+.TableBuilderEltPage select, .TableBuilderPagination select{
     display:inline;
     width:65px;
+    font-size: 12px;
 }
-.TableBuilderEltPageCont{
-    text-align: right;
-    float: right;
-    width:400px;
+.TableBuilderEltPage{ 
+	text-align: left; 
+}
+.TablePerPage{
+	text-align: right;
+	font-size: 12px;
 }
 .TableBuilderPagination{
-	float: right;
 	text-align:right;
 	line-height:12px;
 	height: 30px;
 	margin-bottom: 16px;
+	font-size: 12px;
+	width:250px;
 }
-.TableBuilderPagination span{
-	margin-left:5px;
+.TableBuilderPagination span, .TableBuilderEltPage span{
+	font-weight:bolder;
+	margin-left:6px;
 }
-
+.TableBuilderPagination button{
+	padding-right: 1px;
+	padding-left: 1px;
+}
+.arrows {
+	font-size:1em;
+}
 .TableBuilderBottom{
 	font-family: Arial;
 	font-size:11px;
 	margin-top:5px;
+	width:100%;
 }
 
 .TableBuilderBottom .buttondivarrow{
@@ -53,7 +69,7 @@
 	font-size:12px;
 }
 .TableBuilder thead th.sortable{
-		cursor: pointer;
+	cursor: pointer;
 }
 .TableBuilder thead th span.arrows{
 	display:none;
@@ -67,16 +83,17 @@
 	padding-right:5px;
 }
 
-.TableBuilder .TableBuilderActions a{
-	padding:0px 2px;
-        width:20px;
-}
 .TableBuilder td a, .TableBuilder th a{
 	text-decoration:none;
 	color:#000000;
 }
-.TableBuilder td a:hover{
+.TableBuilder td.TableBuilderLink a:hover{
 	text-decoration:underline;
+}
+
+.TableBuilderActions button, .TableBuilderCard button {
+	border: 0px;
+	background-color: transparent;
 }
 
 
@@ -88,4 +105,35 @@
 .TableBuilderBottom .doublearrow{
 	margin-right:3px;
 	margin-left:10px;
+}
+
+.TableBuilderCard {
+	padding-left:0px !important;
+	padding-right:0px !important;
+}
+.TableBuilderCardFooter {
+	text-align:center;
+	font-weight: bolder;
+	margin-top: 15px;
+}
+.TableBuilderSelector {
+	float:right;
+}
+.TablebuilderModeBtn {
+	cursor:pointer;
+	margin-left:10px;
+}
+@media (max-width: 767.98px) {
+   .TablebuilderModeBtn {
+		margin-left:3px;
+	}
+}
+
+.TableInputFilters {
+    padding: 1.5rem;
+    margin-right: 0;
+    margin-left: 0;
+    margin-bottom: 10px;
+    border: 2px #dee2e6 solid;
+    border-radius: 0.375rem;
 }

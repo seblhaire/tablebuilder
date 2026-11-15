@@ -1,6 +1,9 @@
 <?php
 
-namespace Seblhaire\TableBuilder;
+namespace Seblhaire\TableBuilder\Services;
+
+use Seblhaire\TableBuilder\Contracts\TableBuilderHelperServiceContract;
+use Seblhaire\TableBuilder\Classes\TableDefinition;
 
 use Illuminate\Http\Request;
 
@@ -17,8 +20,8 @@ class TableBuilderHelperService implements TableBuilderHelperServiceContract {
      *            table options
      * @return Seblhaire\TableBuilder\TableDefinition definition object
      */
-    public function initTable($element, $url, $options = []) {
-        return new TableDefinition($element, $url, $options);
+    public function initTable(string $element, string $url, array $options = [], ?Request $request = null) {
+        return new TableDefinition($element, $url, $options, $request);
     }
 
     /**
@@ -32,7 +35,7 @@ class TableBuilderHelperService implements TableBuilderHelperServiceContract {
      *            options list
      * @return Seblhaire\TableBuilder\AbstractTableColumn a column object to be added to table
      */
-    public function initColumn($type, $dataBindTo, $options = []) {
+    public function initColumn(string $type, string $dataBindTo, array $options = []) {
         if (!in_array($type, [
                     'action',
                     'checkbox',
@@ -45,7 +48,7 @@ class TableBuilderHelperService implements TableBuilderHelperServiceContract {
                     'status'
                 ]))
             throw new \Exception('wrong column type ' . $type);
-        $classname = "\Seblhaire\TableBuilder\\" . ucfirst($type) . 'Cell';
+        $classname = "\Seblhaire\TableBuilder\Classes\Columns\\" . ucfirst($type) . 'Cell';
         return new $classname($dataBindTo, $options);
     }
 
@@ -58,7 +61,7 @@ class TableBuilderHelperService implements TableBuilderHelperServiceContract {
      *            validation rules for additional custom parameters sent by table
      * @return Seblhaire\TableBuilder\TableDataBuilder object that buidds data
      */
-    public function initDataBuilder(Request $request, $othervalidationrules = []) {
+    public function initDataBuilder(Request $request, array $othervalidationrules = []) {
         return new TableDataBuilder($request, $othervalidationrules);
     }
 }

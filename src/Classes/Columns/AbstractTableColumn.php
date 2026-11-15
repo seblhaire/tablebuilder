@@ -1,6 +1,6 @@
 <?php
 
-namespace Seblhaire\TableBuilder;
+namespace Seblhaire\TableBuilder\Classes\Columns\Columns;
 
 /**
  * Generic table column object that contains common methods
@@ -9,11 +9,11 @@ namespace Seblhaire\TableBuilder;
  */
 abstract class AbstractTableColumn {
 
-    protected $name = null;
-    protected $type = null;
-    protected $dataBindTo = null;
-    protected $aOptions = null;
-    protected $aCheckOptions = array();
+    protected string $name = '';
+    protected string $type = '';
+    protected ?string $dataBindTo = null;
+    protected ?array $aOptions = null;
+    protected ?array $aCheckOptions = null;
 
     /**
      * javascript object name for column
@@ -70,6 +70,11 @@ abstract class AbstractTableColumn {
             if (strlen($sStr) > 0)
                 $sStr .= ',';
             $sStr .= "classes : '" . $this->aOptions['classes'] . "'";
+        }
+        if (isset($this->aOptions['cardcontentclass'])) {
+            if (strlen($sStr) > 0)
+                $sStr .= ',';
+            $sStr .= "cardcontentclass : '" . $this->aOptions['cardcontentclass'] . "'";
         }
         if (isset($this->aOptions['sortable'])) {
             if (strlen($sStr) > 0)

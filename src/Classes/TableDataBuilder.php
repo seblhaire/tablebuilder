@@ -1,28 +1,29 @@
 <?php
 
-namespace Seblhaire\TableBuilder;
+namespace Seblhaire\TableBuilder\Classes;
 
-use Validator;
-use Illuminate\Http\Request;
+use Seblhaire\TableBuilder\Requests\TableDataBuilderRequest;
 use Illuminate\Support\Facades\DB;
+use Seblhaire\TableBuilder\Enums\TableParams;
 
 /**
  * Class that analyses parameters sent by Javascript table to the controller, and prepares data that must be returned
  */
 class TableDataBuilder {
 
-    private $nbLinesPerPage = null;
-    private $sortBy = null;
-    private $searchTerm = null;
-    private $start = null;
-    private $aLines = null;
-    private $iTotal = null;
-    private $sFooter = null;
+    private int $nbLinesPerPage = 0;
+    private string $sortBy = '';
+    private string $searchTerm = '';
+    private int $start = 0;
+    private array $aLines = [];
+    private int $iTotal = 0;
+    private ?string $sFooter = null;
     private $query = null;
-    private $withtrashed = false;
+    private bool $withtrashed = false;
     private $searchfunction = null;
-    private $methodsToDisplay = array();
+    private array $methodsToDisplay = array();
     private $fieldsList = null;
+    private array $additionalParameters = [];
 
     /**
      * constructor
@@ -32,29 +33,15 @@ class TableDataBuilder {
      * @param array $othervalidationrules
      *            validation rules for additional custom parameters sent by table
      */
-    public function __construct(Request $request, $othervalidationrules = []) {
-        $rules = array_merge([
-            'itemsperpage' => 'required|numeric',
-            'sortBy' => 'present',
-            'start' => 'required|numeric',
-            'searchTerm' => 'present'
-                ], $othervalidationrules);
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            $erreurs = '';
-            foreach ($validator->errors()->all() as $message) {
-                $erreurs .= $message;
-            }
-            throw new \Exception($erreurs);
-        } else {
-            $this->nbLinesPerPage = (int) $request->input('itemsperpage');
-            $this->sortBy = $request->input('sortBy');
-            $this->searchTerm = $request->input('searchTerm');
-            $this->start = (int) $request->input('start');
-            $this->iTotal = 0;
-            $this->sFooter = '';
-        }
+    public function __construct(TableDataBuilderRequest $request) {
+        $validated = $request->validated();
+        $this->nbLinesPerPage = (int)$validated[TableParams::Itemsperpage->value];
+        $this->sortBy = (string)$validated[TableParams::Sortby->value];
+        $this->searchTerm = (string)$validated[TableParams::Searchterm->value];
+        $this->start = (int)$validated[TableParams::Start->value];
+        $this->iTotal = 0;
+        $this->sFooter = '';
+        $this->additionalParameters = $request->validated()->except(TableParams::values());
     }
 
     /**
@@ -257,12 +244,10 @@ class TableDataBuilder {
             }
         }
         if ($this->nbLinesPerPage > 0) {
-            $aRes = $this->query->skip($this->start)
-                    ->take($this->nbLinesPerPage)
-                    ->get();
-        } else {
-            $aRes = $this->query->get();
+            $this->query->skip($this->start)
+                    ->take($this->nbLinesPerPage);
         }
+        $aRes = $this->query->get();
         if ($driver == 'mysql') {
             $expr = DB::raw('SELECT FOUND_ROWS()');
             $this->iTotal = DB::connection($connection)->select($expr->getValue(DB::connection($connection)->getQueryGrammar()))[0]->{'FOUND_ROWS()'};
@@ -317,7 +302,7 @@ class TableDataBuilder {
      * @return json data
      */
     public function output() {
-        if (is_null($this->aLines)) {
+        if (count($this->aLines) == 0) {
             $this->buildData();
         } else {
             $this->buildStaticData();
