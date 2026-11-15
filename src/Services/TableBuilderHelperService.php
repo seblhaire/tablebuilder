@@ -4,6 +4,7 @@ namespace Seblhaire\TableBuilder\Services;
 
 use Seblhaire\TableBuilder\Contracts\TableBuilderHelperServiceContract;
 use Seblhaire\TableBuilder\Classes\TableDefinition;
+use Seblhaire\TableBuilder\Classes\TableDataBuilder;
 
 use Illuminate\Http\Request;
 
