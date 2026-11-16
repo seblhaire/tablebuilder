@@ -40,6 +40,7 @@ class TableDataBuilderGetRequest extends FormRequest {
 
     		}
     	}
+    	dd($rules);
     	return $rules;
     }
 
