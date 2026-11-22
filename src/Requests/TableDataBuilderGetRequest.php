@@ -5,17 +5,16 @@ namespace Seblhaire\TableBuilder\Requests;
 use Illuminate\Validation\Rule;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\ValidationException;
+
 use Seblhaire\TableBuilder\Enums\TableParams;
 
-// http://demoseb.test/tablebuilder/dynamic?tables={"tabtest"%3A{"itemsperpage"%3A20%2C"start"%3A0%2C"sortBy"%3A"birthday%3Aasc"%2C"searchTerm"%3A""}}
-// http://demoseb.test/tablebuilder/dynamic?tables={"tabtest"%3A{"itemsperpage"%3A20%2C"start"%3A0%2C"sortBy"%3A"birthday%3Aasc"%2C"searchTerm"%3A""%2C"startdate"%3A"2026-11-11"%2C"enddate"%3A"2026-11-17"}}
-// http://demoseb.test/tablebuilder/dynamic?tables={"tabtest"%3A{"itemsperpage"%3A20%2C"start"%3A0%2C"sortBy"%3A"birthday%3Aasc"%2C"searchTerm"%3A""%2C"startdate"%3A"2026-11-11"%2C"enddate"%3A"2026-11-17"%2C"toto"%3A"tutu"}}
 class TableDataBuilderGetRequest extends FormRequest {
 	
 	protected $mandatoryParams =  [
-	    TableParams::Itemsperpage->value => 'required|numeric',
+	    TableParams::Itemsperpage->value => 'numeric',
 	    TableParams::Sortby->value => 'string|nullable',
-	    TableParams::Start->value => 'required|numeric',
+	    TableParams::Start->value => 'numeric',
 	    TableParams::Searchterm->value => 'string|nullable'
     ];
 
@@ -41,9 +40,8 @@ class TableDataBuilderGetRequest extends FormRequest {
 
     public function rules() : array{
     	$rules = [];
-    	$rules[config('tablebuilder.table.getattribute')] = 'sometimes';
+    	$rules[config('tablebuilder.table.getattribute')] = ['sometimes', 'array', 'required_array_keys:' . implode(',',$this->tableNames)];
     	$subfield = config('tablebuilder.table.getattribute') . '.*';
-    	$rules[$subfield] = Rule::in($this->tableNames);
     	foreach ($this->mandatoryParams as $key => $values){
     		$rules[$subfield . '.' . $key] = $values;
     	}
@@ -56,3 +54,4 @@ class TableDataBuilderGetRequest extends FormRequest {
     }
 
 }
+
