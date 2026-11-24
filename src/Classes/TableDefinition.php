@@ -15,7 +15,7 @@ class TableDefinition {
     private ?string $url = null;
     private ?array $aOptions = null;
     private ?array $aColumns = null;
-    private ?Request $request = null;
+    private array $initValues = [];
 
     /**
      * constructor
@@ -34,7 +34,17 @@ class TableDefinition {
             'csrf' => csrf_token()
         ]);
         $this->aColumns = array();
-        $this->request = $request;
+        if (!is_null($request)){
+            $valid = $request->validated();
+            if (count($valid) > 0){
+                if (
+                    array_key_exists(config('tablebuilder.table.getattribute'), $valid) && 
+                    array_key_exists($this->sTableElement, $valid[config('tablebuilder.table.getattribute')])
+                ){
+                    $this->initValues = $valid[config('tablebuilder.table.getattribute')][$this->sTableElement];
+                }
+            }
+        }
     }
 
     /**
@@ -93,28 +103,20 @@ class TableDefinition {
     }
 
     private function printInitValues(): string {
-        $params = new \stdClass;
-        $params->itemsperpage = $this->aOptions['itemsperpage'];
-        $params->sortBy =  '';
-        $params->start  = 0;
-        $params->searchTerm = '';
-        if (!is_null($this->request)){
-            $validated = $this->request->validated();
-            if (isset($validated[$this->aOptions['getattribute']])){
-                $jsonarr = json_decode($validated[$this->aOptions['getattribute']], true);
-                if (isset($jsonarr[$this->sTableElement])){
-                    $params->itemsperpage = $jsonarr[$this->sTableElement][TableParams::Itemsperpage->value];
-                    $params->sortBy =  $jsonarr[$this->sTableElement][TableParams::Sortby->value];
-                    $params->start  = $jsonarr[$this->sTableElement][TableParams::Start->value];
-                    $params->searchTerm = $jsonarr[$this->sTableElement][TableParams::Searchterm->value];
-                }
-            }
+        if (count($this->initValues) > 0) {
+            return "{" . 
+                TableParams::Itemsperpage->value . ': ' . ($this->initValues[TableParams::Itemsperpage->value] ?? $this->aOptions['itemsperpage']) . ',' . 
+                TableParams::Start->value . ': ' . ($this->initValues[TableParams::Start->value] ??  0) . ',' .
+                TableParams::Sortby->value . ': "' . ($this->initValues[TableParams::Sortby->value] ?? ''). '",' . 
+                TableParams::Searchterm->value . ': "' . ($this->initValues[TableParams::Searchterm->value] ?? ''). '"}';
+                
+        } else{
+            return "{" . 
+                TableParams::Itemsperpage->value . ': ' . $this->aOptions['itemsperpage'] . ',' . 
+                TableParams::Start->value . ': ' . 0 . ',' .
+                TableParams::Sortby->value . ': "",' . 
+                TableParams::Searchterm->value . ': ""}';
         }
-        return "{" . 
-            TableParams::Itemsperpage->value . ': ' . $params->itemsperpage . ',' . 
-            TableParams::Start->value . ': ' . $params->start . ',' .
-            TableParams::Sortby->value . ': "' . $params->sortBy . '",' . 
-            TableParams::Searchterm->value . ': "' . addslashes($params->searchTerm) . '"}';
     }
 
     private function printColumns(): string {

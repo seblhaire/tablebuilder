@@ -719,6 +719,13 @@ var TableBuilder = {
     togglefilters: function(e){
         e.data.self.filterdiv.toggle();
     },
+    resetdisplay: function(){
+        if (this.options.buildfilters){
+            this.filterdiv = $(this.dofilterdivid());
+            this.filterdiv.hide().insertAfter(this.mainDiv);
+        }
+        this.mainDiv.empty();
+    },
     printBeforeTable: function(){
         let headline = $('<tr></tr>');
         let table = $('<table></table>').attr('id', this.divid + '_beforetable').addClass(this.options.headersclass).append(headline);
@@ -739,9 +746,7 @@ var TableBuilder = {
         }
         this.toggletd.append(this.modeTableBtn).append(this.modeCardBtn);
         if (this.options.buildfilters){
-            this.filterBtn = $('<em/>').addClass(this.options.filterbtn).attr('title', this.options.togglefilters).on('click', {self: this}, this.togglefilters);;
-            this.filterdiv = $(this.dofilterdivid());
-            this.filterdiv.hide();
+            this.filterBtn = $('<em/>').addClass(this.options.filterbtn).attr('title', this.options.togglefilters).on('click', {self: this}, this.togglefilters);
             this.heads.append(this.filterdiv);
             this.toggletd.append(this.filterBtn);
         }
@@ -772,6 +777,7 @@ var TableBuilder = {
         this.mainDiv.append(this.bottoms);
     },
     displayTable: function(){
+        this.resetdisplay();
         this.printBeforeTable();
         let newtable = $('<table></table>');
         newtable.attr('id', this.tableid);
@@ -791,6 +797,7 @@ var TableBuilder = {
         this.doItemsPerPageChoice();
     },
     displayCards : function () {
+        this.resetdisplay();
         this.printBeforeTable();
         this.tableBody = $('<div/>').attr('id', this.tableid).addClass(this.options.cardgroupclass);
         this.tableFoot = $('<div/>').addClass(this.options.cardfooter);
@@ -800,7 +807,6 @@ var TableBuilder = {
     },
     // builds table
     display: function () {
-        this.mainDiv.html('');
         if (this.modecard){
             this.displayCards();
         } else {
